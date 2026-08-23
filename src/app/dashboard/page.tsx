@@ -73,15 +73,15 @@ const formatCOP = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value)
 
+const OrdersChart = dynamic(() => import("@/components/dashboard/orders-chart"), {
+  ssr: false,
+  loading: () => <Loading />,
+})
 export default function DashboardPage() {
   const { user, isAdmin, isLoading: userLoading } = useUser()
   const router = useRouter()
   const [data, setData] = useState<MetricsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const OrdersChart = dynamic(() => import("@/components/dashboard/orders-chart"), {
-    ssr: false,
-    loading: () => <Loading />,
-  })
 
   useEffect(() => {
     // 1. Esperar a que la sesión termine de cargar completamente y exista el usuario
