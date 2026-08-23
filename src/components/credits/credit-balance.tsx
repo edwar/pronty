@@ -3,42 +3,50 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { CreditCard, TrendingUp, TrendingDown, ShoppingBag } from "lucide-react"
 
-const stats = [
-  {
-    label: "Saldo Actual",
-    value: "156",
-    subtitle: "créditos disponibles",
-    icon: CreditCard,
-    color: "text-primary",
-    bg: "bg-primary/10",
-  },
-  {
-    label: "Comprados",
-    value: "200",
-    subtitle: "este mes",
-    icon: TrendingUp,
-    color: "text-success",
-    bg: "bg-success/10",
-  },
-  {
-    label: "Consumidos",
-    value: "44",
-    subtitle: "envíos realizados",
-    icon: TrendingDown,
-    color: "text-destructive",
-    bg: "bg-destructive/10",
-  },
-  {
-    label: "Último Paquete",
-    value: "50",
-    subtitle: "paquete profesional",
-    icon: ShoppingBag,
-    color: "text-warning",
-    bg: "bg-warning/10",
-  },
-]
+interface CreditBalanceProps {
+  balance: number
+  purchased: number
+  consumed: number
+  lastPackage: string | number
+  lastPackageSubtitle?: string
+}
 
-export function CreditBalance() {
+export function CreditBalance({ balance, purchased, consumed, lastPackage, lastPackageSubtitle }: CreditBalanceProps) {
+  const stats = [
+    {
+      label: "Saldo Actual",
+      value: balance.toString(),
+      subtitle: "créditos disponibles",
+      icon: CreditCard,
+      color: "text-primary",
+      bg: "bg-primary/10",
+    },
+    {
+      label: "Comprados",
+      value: purchased.toString(),
+      subtitle: "este mes",
+      icon: TrendingUp,
+      color: "text-success",
+      bg: "bg-success/10",
+    },
+    {
+      label: "Consumidos",
+      value: consumed.toString(),
+      subtitle: "envíos realizados",
+      icon: TrendingDown,
+      color: "text-destructive",
+      bg: "bg-destructive/10",
+    },
+    {
+      label: "Último Paquete",
+      value: lastPackage.toString(),
+      subtitle: lastPackageSubtitle || "paquete reciente",
+      icon: ShoppingBag,
+      color: "text-warning",
+      bg: "bg-warning/10",
+    },
+  ]
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
