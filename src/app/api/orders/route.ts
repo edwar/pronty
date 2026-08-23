@@ -98,7 +98,15 @@ export async function POST(request: Request) {
     }
 
     if (!commerce) {
-      return NextResponse.json({ error: "Comercio no encontrado" }, { status: 404 })
+      const slug = `commerce-${session.user.id.slice(0, 8)}-${Date.now().toString().slice(-4)}`
+      commerce = await prisma.commerce.create({
+        data: {
+          userId: session.user.id,
+          name: session.user.name || "Mi Negocio",
+          slug,
+          credits: 10,
+        },
+      })
     }
 
     // Check credits

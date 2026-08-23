@@ -104,6 +104,16 @@ function RegisterForm() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token: inviteToken }),
         })
+      } else if (formData.businessName) {
+        await fetch("/api/profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            commerce: {
+              name: formData.businessName,
+            },
+          }),
+        })
       }
 
       router.push("/dashboard")
