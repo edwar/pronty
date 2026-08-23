@@ -35,8 +35,8 @@ export async function middleware(request: NextRequest) {
 
         if (response.ok) {
           const data = await response.json()
-          const userRole = data?.session?.user?.role
-          if (data?.session?.user) {
+          const userRole = data?.user?.role
+          if (data?.session && data?.user) {
             const targetPath = userRole === "ADMIN_MASTER" ? "/admin" : "/dashboard"
             return NextResponse.redirect(new URL(targetPath, request.url))
           }
@@ -67,7 +67,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const data = await response.json()
-    const userRole = data?.session?.user?.role
+    const userRole = data?.user?.role
 
     if (!data?.session) {
       return NextResponse.redirect(new URL("/login", request.url))
