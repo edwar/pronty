@@ -79,19 +79,18 @@ const OrdersChart = dynamic(() => import("@/components/dashboard/orders-chart"),
 })
 
 export default function DashboardPage() {
-  const { isAdmin, isLoading: userLoading } = useUser()
+  const { isAdmin, isLoading } = useUser()
   const router = useRouter()
   const [data, setData] = useState<MetricsData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (userLoading) return
-    if (!userLoading && isAdmin) {
+    if (isLoading) return
+    if (isAdmin) {
       window.location.replace("/admin")
       return
     }
     fetchMetrics()
-  }, [userLoading, isAdmin, router])
+  }, [isLoading, isAdmin, router])
 
   const fetchMetrics = async () => {
     try {
@@ -100,12 +99,10 @@ export default function DashboardPage() {
       setData(result)
     } catch (err) {
       console.error("Error fetching metrics:", err)
-    } finally {
-      setIsLoading(false)
     }
   }
 
-  if (isLoading || userLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout>
         <Loading fullpage />
