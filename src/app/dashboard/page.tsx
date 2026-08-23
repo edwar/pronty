@@ -111,7 +111,11 @@ export default function DashboardPage() {
   }
 
   if (isAdmin) {
-    return null
+    return (
+      <DashboardLayout>
+        <Loading fullpage />
+      </DashboardLayout>
+    )
   }
 
   const summary = data?.summary

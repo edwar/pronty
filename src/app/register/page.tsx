@@ -116,7 +116,7 @@ function RegisterForm() {
         })
       }
 
-      router.push("/dashboard")
+      window.location.href = "/dashboard"
     } catch (err) {
       setError("Error al crear la cuenta. Intenta de nuevo.")
     } finally {
