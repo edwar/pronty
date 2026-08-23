@@ -77,31 +77,20 @@ const OrdersChart = dynamic(() => import("@/components/dashboard/orders-chart"),
   ssr: false,
   loading: () => <Loading />,
 })
+
 export default function DashboardPage() {
-  const { user, isAdmin, isLoading: userLoading } = useUser()
+  const { isAdmin, isLoading: userLoading } = useUser()
   const router = useRouter()
   const [data, setData] = useState<MetricsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // 1. Esperar a que el usuario termine de resolverse
-    if (userLoading) return
-
-    // 2. Si no hay usuario, enviar al login
-    if (!user) {
-      router.replace("/login")
+    if (!userLoading && isAdmin) {
+      router.push("/admin")
       return
     }
-
-    // 3. Si es un ADMIN_MASTER, usar una redirección nativa del navegador
-    if (isAdmin) {
-      window.location.replace("/admin")
-      return
-    }
-
-    // 4. Si es un comercio válido, cargar las métricas
     fetchMetrics()
-  }, [userLoading, user, isAdmin, router])
+  }, [userLoading, isAdmin, router])
 
   const fetchMetrics = async () => {
     try {
@@ -115,9 +104,7 @@ export default function DashboardPage() {
     }
   }
 
-  // Si está cargando o el usuario es admin, mantener la pantalla en blanco o loader
-  // para evitar renderizar componentes de comercio mientras se realiza la redirección.
-  if (userLoading || isAdmin || !user) {
+  if (isLoading || userLoading) {
     return (
       <DashboardLayout>
         <Loading fullpage />
@@ -125,13 +112,8 @@ export default function DashboardPage() {
     )
   }
 
-  // Si las métricas aún no cargan para el comercio
-  if (isLoading) {
-    return (
-      <DashboardLayout>
-        <Loading fullpage />
-      </DashboardLayout>
-    )
+  if (isAdmin) {
+    return null
   }
 
   const summary = data?.summary
