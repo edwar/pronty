@@ -87,7 +87,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (userLoading) return
     if (!userLoading && isAdmin) {
-      router.push("/admin")
+      window.location.replace("/admin")
       return
     }
     fetchMetrics()
