@@ -84,6 +84,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    console.log(userLoading, user, isAdmin)
     if (userLoading) return
 
     // 1. Redireccionar si no hay usuario o si es administrador
