@@ -9,8 +9,10 @@ import {
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Eye, Trash2, MapPin, Clock, User, Bike, Loader2, AlertCircle } from "lucide-react"
+import { MoreHorizontal, Eye, Trash2, MapPin, Clock, User, Bike, Loader2, AlertCircle, ShoppingBag } from "lucide-react"
 import { OrderDetailsDialog } from "@/components/orders/order-details-dialog"
+import { EmptyState } from "@/components/ui/empty-state"
+
 
 interface OrdersListProps {
   statusFilter?: string
@@ -105,10 +107,12 @@ export function OrdersList({
             Cargando pedidos...
           </div>
         ) : orders.length === 0 ? (
-          <div className="py-16 text-center text-sm text-muted-foreground space-y-1">
-            <p className="font-medium text-foreground">No se encontraron pedidos</p>
-            <p className="text-xs">Intenta cambiar los filtros de búsqueda o crea un nuevo pedido.</p>
-          </div>
+          <EmptyState
+            icon={ShoppingBag}
+            title="No se encontraron pedidos"
+            description="No hay pedidos registrados con los filtros seleccionados. Intenta cambiar la búsqueda o solicitar un nuevo domicilio."
+            className="border-0 bg-transparent py-16"
+          />
         ) : (
           <Table>
             <TableHeader>

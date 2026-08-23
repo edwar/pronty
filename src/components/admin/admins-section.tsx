@@ -21,7 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ShieldAlert, Plus, ShieldCheck, Phone, Calendar, Loader2 } from "lucide-react"
+import { ShieldAlert, Plus, ShieldCheck, Phone, Calendar, Loader2, UserCheck } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
+
 
 interface AdminUser {
   id: string
@@ -152,9 +154,12 @@ export function AdminsSection() {
               Cargando administradores...
             </div>
           ) : admins.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              No hay administradores registrados.
-            </div>
+            <EmptyState
+              icon={UserCheck}
+              title="No hay administradores registrados"
+              description="Agrega administradores para que gestionen la plataforma junto a ti."
+              compact
+            />
           ) : (
             <div className="rounded-md border border-border/60 overflow-hidden">
               <Table>
