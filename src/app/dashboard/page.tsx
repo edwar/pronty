@@ -85,11 +85,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (userLoading) return
+
     if (isAdmin) {
       router.replace("/admin")
-    } else {
-      fetchMetrics()
+      return
     }
+
+    fetchMetrics()
   }, [userLoading, isAdmin, router])
 
   const fetchMetrics = async () => {

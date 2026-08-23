@@ -15,6 +15,13 @@ export async function GET(request: Request) {
       )
     }
 
+    if ((session.user as any).role === "ADMIN_MASTER") {
+      return NextResponse.json(
+        { error: "Los administradores no tienen métricas de comercio" },
+        { status: 403 }
+      )
+    }
+
     let commerce = await prisma.commerce.findUnique({
       where: { userId: session.user.id },
     })
