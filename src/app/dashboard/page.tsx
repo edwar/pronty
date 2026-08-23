@@ -88,6 +88,7 @@ export default function DashboardPage() {
       router.push("/admin")
       return
     }
+    if (userLoading) return
     fetchMetrics()
   }, [userLoading, isAdmin, router])
 
