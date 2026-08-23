@@ -12,13 +12,16 @@ interface UserWithRole {
 }
 
 export function useUser() {
-  const { data: session, isPending } = useSession()
+  const { data: session, isPending, error } = useSession()
   const user = session?.user as UserWithRole | undefined
+
+  // Solo se considera cargado si isPending es false Y (tenemos datos de sesión o dió error)
+  const isLoading = isPending
 
   return {
     user: user ?? null,
     session: session ?? null,
-    isLoading: isPending,
+    isLoading,
     isAdmin: user?.role === "ADMIN_MASTER",
     isCommercant: user?.role === "COMMERCER",
     isDriver: user?.role === "DRIVER",

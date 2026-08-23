@@ -74,7 +74,7 @@ const formatCOP = (value: number) =>
   }).format(value)
 
 export default function DashboardPage() {
-  const { isAdmin, isLoading: userLoading } = useUser()
+  const { user, isAdmin, isLoading: userLoading } = useUser()
   const router = useRouter()
   const [data, setData] = useState<MetricsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -84,15 +84,18 @@ export default function DashboardPage() {
   })
 
   useEffect(() => {
-    if (userLoading) return
+    // 1. Esperar a que la sesión termine de cargar completamente y exista el usuario
+    if (userLoading || !user) return
 
+    // 2. Redirección inmediata si es ADMIN_MASTER
     if (isAdmin) {
-      router.replace("/admin")
+      window.location.href = "/admin"
       return
     }
 
+    // 3. Ejecutar métricas solo si es un comercio válido
     fetchMetrics()
-  }, [userLoading, isAdmin, router])
+  }, [userLoading, user, isAdmin])
 
   const fetchMetrics = async () => {
     try {
@@ -106,7 +109,7 @@ export default function DashboardPage() {
     }
   }
 
-  if (isLoading || userLoading) {
+  if (userLoading || !user || isAdmin || isLoading) {
     return (
       <DashboardLayout>
         <Loading fullpage />
