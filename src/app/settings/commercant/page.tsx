@@ -29,6 +29,8 @@ import { signOut } from "@/lib/auth-client"
 import { useUser } from "@/hooks/use-user"
 import { parseNumericInput, cn } from "@/lib/utils"
 import { NumberInput } from "@/components/ui/number-input"
+import { TeamSection } from "@/components/settings/team-section"
+
 
 interface SettingsData {
   email: string
@@ -592,6 +594,8 @@ export default function CommercantSettingsPage() {
             </CardContent>
           </Card>
         </div>
+
+        <TeamSection />
       </div>
     </DashboardLayout>
   )

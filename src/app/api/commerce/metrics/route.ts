@@ -15,9 +15,15 @@ export async function GET(request: Request) {
       )
     }
 
-    const commerce = await prisma.commerce.findUnique({
+    let commerce = await prisma.commerce.findUnique({
       where: { userId: session.user.id },
     })
+
+    if (!commerce && (session.user as any).commerceId) {
+      commerce = await prisma.commerce.findUnique({
+        where: { id: (session.user as any).commerceId },
+      })
+    }
 
     if (!commerce) {
       return NextResponse.json(

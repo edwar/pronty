@@ -26,6 +26,10 @@ export const auth = betterAuth({
         type: 'string',
         required: false,
       },
+      commerceId: {
+        type: 'string',
+        required: false,
+      },
     },
   },
   databaseHooks: {

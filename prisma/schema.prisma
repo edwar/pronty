@@ -25,9 +25,12 @@ model User {
 
   // Relations
   commerce      Commerce?
+  commerceId    String?
+  commerceJoined Commerce? @relation("CommerceEmployees", fields: [commerceId], references: [id])
   driver        Driver?
   sessions      Session[]
   accounts      Account[]
+
 
   @@map("users")
 }
@@ -107,10 +110,13 @@ model Commerce {
   updatedAt   DateTime @updatedAt
 
   user        User     @relation(fields: [userId], references: [id])
+  employees   User[]   @relation("CommerceEmployees")
   orders      Order[]
   transactions Transaction[]
   creditPackages CreditPackage[]
   ratings     Rating[]
+  invitations Invitation[]
+
 
   @@index([isActive])
   @@map("commerces")
@@ -450,3 +456,31 @@ model Rating {
   @@index([commerceId, createdAt])
   @@map("ratings")
 }
+
+// ============================================
+// INVITACIONES A COMERCIOS
+// ============================================
+
+model Invitation {
+  id          String           @id @default(uuid())
+  commerceId  String
+  email       String
+  role        UserRole         @default(COMMERCER)
+  token       String           @unique
+  status      InvitationStatus @default(PENDING)
+  expiresAt   DateTime
+  createdAt   DateTime         @default(now())
+
+  commerce    Commerce         @relation(fields: [commerceId], references: [id], onDelete: Cascade)
+
+  @@unique([commerceId, email])
+  @@map("invitations")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
