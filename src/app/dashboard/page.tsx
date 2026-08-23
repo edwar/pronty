@@ -84,21 +84,22 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    console.log(userLoading, user, isAdmin)
+    // 1. Esperar a que el usuario termine de resolverse
     if (userLoading) return
 
-    // 1. Redireccionar si no hay usuario o si es administrador
+    // 2. Si no hay usuario, enviar al login
     if (!user) {
       router.replace("/login")
       return
     }
 
+    // 3. Si es un ADMIN_MASTER, usar una redirección nativa del navegador
     if (isAdmin) {
-      router.replace("/admin")
+      window.location.replace("/admin")
       return
     }
 
-    // 2. Cargar métricas solo si es un comercio
+    // 4. Si es un comercio válido, cargar las métricas
     fetchMetrics()
   }, [userLoading, user, isAdmin, router])
 
@@ -114,7 +115,9 @@ export default function DashboardPage() {
     }
   }
 
-  if (userLoading || (!data && isLoading) || isAdmin || !user) {
+  // Si está cargando o el usuario es admin, mantener la pantalla en blanco o loader
+  // para evitar renderizar componentes de comercio mientras se realiza la redirección.
+  if (userLoading || isAdmin || !user) {
     return (
       <DashboardLayout>
         <Loading fullpage />
@@ -122,8 +125,13 @@ export default function DashboardPage() {
     )
   }
 
-  if (isAdmin) {
-    return null
+  // Si las métricas aún no cargan para el comercio
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <Loading fullpage />
+      </DashboardLayout>
+    )
   }
 
   const summary = data?.summary
