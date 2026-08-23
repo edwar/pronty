@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Check, Zap } from "lucide-react"
+import { Check, Zap, Loader2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Loading } from "@/components/ui/loading"
 
@@ -33,6 +33,8 @@ const formatCOP = (value: number) =>
 export function CreditPackages() {
   const [settings, setSettings] = useState<CreditSettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [purchasingPackageId, setPurchasingPackageId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchSettings()
@@ -52,6 +54,33 @@ export function CreditPackages() {
       setSettings({ creditValue: 1000, lowCreditsThreshold: 5, packages: [] })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleBuyPackage = async (packageId: string) => {
+    setPurchasingPackageId(packageId)
+    setError(null)
+    try {
+      const res = await fetch("/api/payments/create-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packageId }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Error al procesar el pago")
+      }
+
+      if (data.initPoint) {
+        window.location.href = data.initPoint
+      } else {
+        throw new Error("No se obtuvo la URL de pago de Mercado Pago")
+      }
+    } catch (err: any) {
+      setError(err.message || "Error al iniciar el pago con Mercado Pago")
+      setPurchasingPackageId(null)
     }
   }
 
@@ -90,13 +119,21 @@ export function CreditPackages() {
           Paquetes de Créditos
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-0 p-5 pt-0">
+      <CardContent className="space-y-4 p-5 pt-0">
+        {error && (
+          <div className="p-3.5 rounded-lg bg-destructive/10 text-destructive text-xs flex items-center gap-2 border border-destructive/20">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
         <div className="grid gap-4 lg:grid-cols-3">
           {packages.map((pkg) => {
             const basePrice = pkg.credits * creditValue
             const discountAmount = Math.round(basePrice * (pkg.discount / 100))
             const finalPrice = basePrice - discountAmount
             const pricePerCredit = pkg.credits > 0 ? Math.round(finalPrice / pkg.credits) : 0
+            const isBuying = purchasingPackageId === pkg.id
 
             return (
               <div
@@ -126,7 +163,7 @@ export function CreditPackages() {
                       {formatCOP(pricePerCredit)}/crédito
                     </div>
                     {pkg.discount > 0 && (
-                      <div className="mt-1 flex items-center gap-1">
+                      <div className="mt-1 flex items-center gap-1 justify-end">
                         <span className="text-xs text-muted-foreground line-through">
                           {formatCOP(basePrice)}
                         </span>
@@ -148,8 +185,17 @@ export function CreditPackages() {
                 <Button
                   className={cn("w-full", pkg.popular ? "" : "variant-outline")}
                   variant={pkg.popular ? "default" : "outline"}
+                  onClick={() => handleBuyPackage(pkg.id)}
+                  disabled={purchasingPackageId !== null}
                 >
-                  Comprar Paquete
+                  {isBuying ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Procesando...
+                    </>
+                  ) : (
+                    "Comprar Paquete"
+                  )}
                 </Button>
               </div>
             )
