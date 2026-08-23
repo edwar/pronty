@@ -15,7 +15,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
-      router.push("/dashboard")
+      router.replace("/dashboard")
     }
   }, [isAdmin, isLoading, router])
 

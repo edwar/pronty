@@ -30,6 +30,7 @@ export async function middleware(request: NextRequest) {
           headers: {
             cookie: request.headers.get("cookie") || "",
           },
+          cache: "no-store",
         })
 
         if (response.ok) {
@@ -58,6 +59,7 @@ export async function middleware(request: NextRequest) {
       headers: {
         cookie: request.headers.get("cookie") || "",
       },
+      cache: "no-store",
     })
 
     if (!response.ok) {
