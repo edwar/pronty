@@ -46,7 +46,7 @@ export default function OrdersPage() {
           </div>
 
           <div className="w-full sm:w-[200px]">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v || "ALL")}>
               <SelectTrigger className="h-9 text-sm">
                 <div className="flex items-center gap-1.5">
                   <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

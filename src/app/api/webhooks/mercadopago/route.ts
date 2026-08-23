@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       prisma.transaction.create({
         data: {
           commerceId,
-          type: "RECHARGE",
+          type: "PURCHASE",
           credits: addedCredits,
           balance: newBalance,
           description: `Recarga de ${addedCredits} créditos vía Mercado Pago (Pago #${payment.id})`,

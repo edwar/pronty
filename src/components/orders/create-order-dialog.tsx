@@ -265,7 +265,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
             {assignmentType === "DIRECT" && (
               <div className="space-y-2">
                 <Label>Domiciliario *</Label>
-                <Select value={driverId} onValueChange={setDriverId}>
+                <Select value={driverId} onValueChange={(v) => setDriverId(v || "")}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar domiciliario activo" />
                   </SelectTrigger>

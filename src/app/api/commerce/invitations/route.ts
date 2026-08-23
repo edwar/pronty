@@ -59,7 +59,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       invitations,
-      members: members.map(m => ({
+      members: members.map((m: any) => ({
         ...m,
         isOwner: m.id === commerce.userId,
       })),

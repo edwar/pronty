@@ -44,21 +44,21 @@ export async function GET() {
       }),
     ])
 
-    const deliveredOrders = orders.filter((o) => o.status === "DELIVERED")
+    const deliveredOrders = orders.filter((o: any) => o.status === "DELIVERED")
     const totalRevenue = deliveredOrders.reduce(
-      (sum, o) => sum + Number(o.totalFee),
+      (sum: number, o: any) => sum + Number(o.totalFee),
       0
     )
     const totalCommissions = deliveredOrders.reduce(
-      (sum, o) => sum + Number(o.commissionFee ?? 0),
+      (sum: number, o: any) => sum + Number(o.commissionFee ?? 0),
       0
     )
     const creditsSold = transactions
-      .filter((t) => t.type === "PURCHASE")
-      .reduce((sum, t) => sum + t.credits, 0)
+      .filter((t: any) => t.type === "PURCHASE")
+      .reduce((sum: number, t: any) => sum + t.credits, 0)
     const pendingPayouts = earnings
-      .filter((e) => e.status === "PENDING")
-      .reduce((sum, e) => sum + Number(e.netEarning), 0)
+      .filter((e: any) => e.status === "PENDING")
+      .reduce((sum: number, e: any) => sum + Number(e.netEarning), 0)
 
     const days = 30
     const now = new Date()
@@ -70,17 +70,17 @@ export async function GET() {
       const next = new Date(d)
       next.setDate(d.getDate() + 1)
       const dayOrders = deliveredOrders.filter(
-        (o) => new Date(o.createdAt) >= d && new Date(o.createdAt) < next
+        (o: any) => new Date(o.createdAt) >= d && new Date(o.createdAt) < next
       )
       series.push({
         date: d.toISOString().slice(0, 10),
         label: d.toLocaleDateString("es-CO", { day: "2-digit", month: "short" }),
         orders: dayOrders.length,
-        revenue: dayOrders.reduce((sum, o) => sum + Number(o.totalFee), 0),
+        revenue: dayOrders.reduce((sum: number, o: any) => sum + Number(o.totalFee), 0),
       })
     }
 
-    const commerceMap = new Map(commerces.map((c) => [c.id, c.name]))
+    const commerceMap = new Map(commerces.map((c: any) => [c.id, c.name]))
     const ordersByCommerce = new Map<string, { orders: number; revenue: number }>()
     for (const o of deliveredOrders) {
       const current = ordersByCommerce.get(o.commerceId) ?? { orders: 0, revenue: 0 }
@@ -97,7 +97,7 @@ export async function GET() {
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5)
 
-    const driverMap = new Map(drivers.map((d) => [d.id, d.fullName]))
+    const driverMap = new Map(drivers.map((d: any) => [d.id, d.fullName]))
     const ordersByDriver = new Map<string, { orders: number; earnings: number }>()
     for (const o of deliveredOrders) {
       if (!o.driverId) continue
