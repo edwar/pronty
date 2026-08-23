@@ -1,0 +1,452 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgcrypto]
+}
+
+// ============================================
+// AUTENTICACIÓN (better-auth)
+// ============================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  phone         String?   @unique
+  role          UserRole  @default(COMMERCER)
+  avatarUrl     String?
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  commerce      Commerce?
+  driver        Driver?
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN_MASTER
+  COMMERCER
+  DRIVER
+  PERSON
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id              String  @id @default(uuid())
+  userId          String
+  accountId       String
+  providerId      String
+  password        String?
+  issuer          String?
+  refreshToken    String?
+  accessToken     String?
+  expiresAt       Int?
+  tokenType       String?
+  scope           String?
+  idToken         String?
+  sessionState    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verifications")
+}
+
+// ============================================
+// COMERCIOS / RESTAURANTES
+// ============================================
+
+model Commerce {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  name        String
+  slug        String   @unique
+  description String?
+  address     String?
+  phone       String?
+  whatsapp    String?
+  logoUrl     String?
+  isActive    Boolean  @default(true)
+  credits     Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+  orders      Order[]
+  transactions Transaction[]
+  creditPackages CreditPackage[]
+  ratings     Rating[]
+
+  @@index([isActive])
+  @@map("commerces")
+}
+
+// ============================================
+// DOMICILIARIOS
+// ============================================
+
+model Driver {
+  id              String       @id @default(uuid())
+  userId          String       @unique
+  phone           String       @unique
+  whatsappId      String?      @unique
+  fullName        String
+  vehicleType     VehicleType  @default(MOTORCYCLE)
+  licensePlate    String?
+  zone            String?
+  isAvailable     Boolean      @default(true)
+  isActive        Boolean      @default(false)
+  isApproved      Boolean      @default(false)
+  balance         Decimal      @default(0) @db.Decimal(10, 2)
+  commissionRate  Decimal      @default(0) @db.Decimal(3, 2)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user            User         @relation(fields: [userId], references: [id])
+  orders          Order[]
+  driverEarnings  DriverEarning[]
+  notifications   DriverNotification[]
+  groupMemberships DriverGroupMember[]
+  ratings         Rating[]
+
+  @@index([isAvailable, isActive, isApproved])
+  @@index([zone])
+  @@map("drivers")
+}
+
+enum VehicleType {
+  BICYCLE
+  MOTORCYCLE
+  CAR
+  OTHER
+}
+
+// ============================================
+// PEDIDOS / ÓRDENES
+// ============================================
+
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique
+  commerceId      String
+  driverId        String?
+  
+  pickupAddress   String
+  pickupLat       Decimal?    @db.Decimal(10, 8)
+  pickupLng       Decimal?    @db.Decimal(11, 8)
+  pickupNotes     String?
+  deliveryAddress String
+  deliveryLat     Decimal?    @db.Decimal(10, 8)
+  deliveryLng     Decimal?    @db.Decimal(11, 8)
+  deliveryNotes   String?
+  
+  recipientName   String
+  recipientPhone  String
+  packageDescription String?
+  
+  status          OrderStatus @default(PENDING)
+  assignmentType  AssignmentType @default(DIRECT)
+  
+  baseFee         Decimal     @db.Decimal(10, 2)
+  commissionFee   Decimal?    @db.Decimal(10, 2)
+  totalFee        Decimal     @db.Decimal(10, 2)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  assignedAt      DateTime?
+  pickedUpAt      DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
+  
+  expiresAt       DateTime?
+  assignmentExpiresAt DateTime?
+  cancelReason    String?
+  notes           String?
+
+  commerce        Commerce    @relation(fields: [commerceId], references: [id])
+  driver          Driver?     @relation(fields: [driverId], references: [id], map: "driver_id")
+  statusLogs      OrderStatusLog[]
+  whatsappLogs    WhatsAppLog[]
+  earnings        DriverEarning?
+  rating          Rating?
+
+  @@index([commerceId, status])
+  @@index([driverId, status])
+  @@index([status, createdAt])
+  @@index([orderNumber])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  ASSIGNING_DIRECT
+  ASSIGNING_BROADCAST
+  ACCEPTED
+  HEADING_TO_PICKUP
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+  EXPIRED
+}
+
+enum AssignmentType {
+  DIRECT
+  BROADCAST
+}
+
+// ============================================
+// LOGS DE ESTADOS DEL PEDIDO
+// ============================================
+
+model OrderStatusLog {
+  id        String      @id @default(uuid())
+  orderId   String
+  from      OrderStatus?
+  to        OrderStatus
+  note      String?
+  actorId   String?
+  createdAt DateTime    @default(now())
+
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@map("order_status_logs")
+}
+
+// ============================================
+// LOGS DE WHATSAPP
+// ============================================
+
+model WhatsAppLog {
+  id              String   @id @default(uuid())
+  orderId         String?
+  phone           String
+  direction       WhatsAppDirection
+  messageType     String
+  templateName    String?
+  content         Json
+  whatsappMessageId String? @unique
+  status          String   @default("sent")
+  errorCode       String?
+  errorMessage    String?
+  pricingType     String?
+  cost            Decimal? @db.Decimal(10, 6)
+  createdAt       DateTime @default(now())
+
+  order           Order?   @relation(fields: [orderId], references: [id])
+
+  @@index([orderId, createdAt])
+  @@index([phone, createdAt])
+  @@map("whatsapp_logs")
+}
+
+enum WhatsAppDirection {
+  INBOUND
+  OUTBOUND
+}
+
+// ============================================
+// SISTEMA DE CRÉDITOS
+// ============================================
+
+model CreditPackage {
+  id            String   @id @default(uuid())
+  commerceId    String
+  name          String
+  credits       Int
+  price         Decimal  @db.Decimal(10, 2)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  commerce      Commerce @relation(fields: [commerceId], references: [id])
+  transactions  Transaction[]
+
+  @@map("credit_packages")
+}
+
+model Transaction {
+  id            String            @id @default(uuid())
+  commerceId    String
+  packageId     String?
+  type          TransactionType
+  credits       Int
+  balance       Int
+  description   String?
+  referenceId   String?
+  createdBy     String?
+  createdAt     DateTime          @default(now())
+
+  commerce      Commerce          @relation(fields: [commerceId], references: [id])
+  package       CreditPackage?    @relation(fields: [packageId], references: [id])
+
+  @@index([commerceId, createdAt])
+  @@map("transactions")
+}
+
+enum TransactionType {
+  PURCHASE
+  CONSUMPTION
+  REFUND
+  ADJUSTMENT
+}
+
+// ============================================
+// GANANCIAS DE DOMICILIARIOS
+// ============================================
+
+model DriverEarning {
+  id            String   @id @default(uuid())
+  driverId      String
+  orderId       String   @unique
+  baseFee       Decimal  @db.Decimal(10, 2)
+  commission    Decimal  @db.Decimal(10, 2)
+  netEarning    Decimal  @db.Decimal(10, 2)
+  status        EarningStatus @default(PENDING)
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  driver        Driver   @relation(fields: [driverId], references: [id])
+  order         Order    @relation(fields: [orderId], references: [id])
+
+  @@index([driverId, status])
+  @@map("driver_earnings")
+}
+
+enum EarningStatus {
+  PENDING
+  PAID
+  WITHDRAWN
+}
+
+// ============================================
+// NOTIFICACIONES A DOMICILIARIOS
+// ============================================
+
+model DriverNotification {
+  id            String   @id @default(uuid())
+  driverId      String
+  type          NotificationType
+  title         String
+  body          String
+  data          Json?
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  driver        Driver   @relation(fields: [driverId], references: [id])
+
+  @@index([driverId, isRead, createdAt])
+  @@map("driver_notifications")
+}
+
+enum NotificationType {
+  NEW_ORDER
+  ORDER_CANCELLED
+  EARNING_RECEIVED
+  SYSTEM
+}
+
+// ============================================
+// CONFIGURACIÓN GLOBAL
+// ============================================
+
+model SystemConfig {
+  id            String   @id @default(uuid())
+  key           String   @unique
+  value         Json
+  description   String?
+  updatedBy     String?
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+
+  @@map("system_config")
+}
+
+// ============================================
+// GRUPOS DE DOMICILIARIOS (para broadcast)
+// ============================================
+
+model DriverGroup {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  zone          String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  members       DriverGroupMember[]
+
+  @@map("driver_groups")
+}
+
+model DriverGroupMember {
+  id            String   @id @default(uuid())
+  groupId       String
+  driverId      String
+  joinedAt      DateTime @default(now())
+
+  group         DriverGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  driver        Driver      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, driverId])
+  @@map("driver_group_members")
+}
+
+// ============================================
+// CALIFICACIONES
+// ============================================
+
+model Rating {
+  id            String   @id @default(uuid())
+  orderId       String   @unique
+  commerceId    String
+  driverId      String
+  rating        Int      @db.SmallInt
+  comment       String?
+  createdAt     DateTime @default(now())
+
+  order         Order    @relation(fields: [orderId], references: [id])
+  commerce      Commerce @relation(fields: [commerceId], references: [id])
+  driver        Driver   @relation(fields: [driverId], references: [id])
+
+  @@index([driverId, createdAt])
+  @@index([commerceId, createdAt])
+  @@map("ratings")
+}
