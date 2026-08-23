@@ -15,15 +15,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts"
-import {
   ShoppingBag,
   CheckCircle2,
   CreditCard,
@@ -34,6 +25,7 @@ import {
 import { Loading } from "@/components/ui/loading"
 import { useUser } from "@/hooks/use-user"
 import { cn } from "@/lib/utils"
+import dynamic from "next/dynamic"
 
 interface MetricsData {
   summary: {
@@ -86,6 +78,10 @@ export default function DashboardPage() {
   const router = useRouter()
   const [data, setData] = useState<MetricsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const OrdersChart = dynamic(() => import("@/components/dashboard/orders-chart"), {
+    ssr: false,
+    loading: () => <Loading />,
+  })
 
   useEffect(() => {
     if (!userLoading && isAdmin) {
@@ -201,46 +197,7 @@ export default function DashboardPage() {
               <CardDescription>Últimos 14 días</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={260}>
-                <AreaChart data={data?.series ?? []} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.25} />
-                      <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis
-                    dataKey="label"
-                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                    tickLine={false}
-                    axisLine={false}
-                    interval={2}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                    tickLine={false}
-                    axisLine={false}
-                    allowDecimals={false}
-                    width={32}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 8,
-                      border: "1px solid var(--border)",
-                      fontSize: 12,
-                      background: "var(--popover)",
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="orders"
-                    stroke="var(--primary)"
-                    strokeWidth={2}
-                    fill="url(#ordersGradient)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <OrdersChart data={data?.series ?? []} />
             </CardContent>
           </Card>
 
