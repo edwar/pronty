@@ -14,6 +14,8 @@ import { Loading } from "@/components/ui/loading"
 import { NumberInput } from "@/components/ui/number-input"
 import { CreditsSection } from "@/components/admin/credits-section"
 import { useUser } from "@/hooks/use-user"
+import { AdminsSection } from "@/components/admin/admins-section"
+
 
 interface CreditPackage {
   id: string
@@ -422,9 +424,12 @@ export default function AdminSettingsPage() {
                 }
               />
             </div>
+
+            <AdminsSection />
           </div>
         ) : null}
       </div>
+
     </DashboardLayout>
   )
 }

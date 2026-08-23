@@ -114,19 +114,6 @@ export default function LoginPage() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? <Loading text="Iniciando sesión..." className="flex-row gap-2" /> : "Iniciar Sesión"}
               </Button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-card px-2 text-muted-foreground">O</span>
-                </div>
-              </div>
-
-              <Button type="button" variant="outline" className="w-full">
-                Continuar con WhatsApp
-              </Button>
             </form>
           </CardContent>
         </Card>
