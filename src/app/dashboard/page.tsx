@@ -85,6 +85,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    if (userLoading) return
     if (!userLoading && isAdmin) {
       router.push("/admin")
       return
