@@ -1,6 +1,36 @@
+import { prisma } from "@/lib/prisma"
+
 const WHATSAPP_API_URL = "https://graph.facebook.com/v18.0"
-const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID
-const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN
+
+function formatPhoneForWhatsApp(phone: string): string {
+  // Remove spaces, dashes, parentheses, and leading +
+  let cleaned = phone.replace(/[\s\-\(\)\+]/g, "")
+  // If starts with 0, remove it (local format)
+  if (cleaned.startsWith("0")) {
+    cleaned = cleaned.substring(1)
+  }
+  return cleaned
+}
+
+async function getWhatsAppConfig() {
+  try {
+    const config = await prisma.systemConfig.findUnique({
+      where: { key: "global_settings" },
+    })
+    const settings = config?.value as any
+    return {
+      phoneNumberId: settings?.whatsapp?.phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID,
+      accessToken: settings?.whatsapp?.accessToken || process.env.WHATSAPP_ACCESS_TOKEN,
+      enabled: settings?.whatsapp?.enabled ?? false,
+    }
+  } catch {
+    return {
+      phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID,
+      accessToken: process.env.WHATSAPP_ACCESS_TOKEN,
+      enabled: false,
+    }
+  }
+}
 
 interface SendWhatsAppMessageProps {
   to: string
@@ -8,23 +38,28 @@ interface SendWhatsAppMessageProps {
 }
 
 export async function sendWhatsAppMessage({ to, message }: SendWhatsAppMessageProps) {
-  if (!PHONE_NUMBER_ID || !ACCESS_TOKEN) {
+  const { phoneNumberId, accessToken, enabled } = await getWhatsAppConfig()
+  
+  if (!enabled || !phoneNumberId || !accessToken) {
     console.error("WhatsApp credentials not configured")
     return { success: false, error: "WhatsApp not configured" }
   }
 
+  const formattedTo = formatPhoneForWhatsApp(to)
+  console.log(`[WhatsApp] Sending message to ${formattedTo}`)
+
   try {
     const response = await fetch(
-      `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+      `${WHATSAPP_API_URL}/${phoneNumberId}/messages`,
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${ACCESS_TOKEN}`,
+          "Authorization": `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           messaging_product: "whatsapp",
-          to,
+          to: formattedTo,
           type: "text",
           text: { body: message },
         }),
@@ -34,13 +69,14 @@ export async function sendWhatsAppMessage({ to, message }: SendWhatsAppMessagePr
     const data = await response.json()
 
     if (!response.ok) {
-      console.error("WhatsApp API error:", data)
+      console.error("[WhatsApp] API error:", data)
       return { success: false, error: data.error?.message || "Error sending message" }
     }
 
+    console.log("[WhatsApp] Message sent successfully")
     return { success: true, data }
   } catch (error) {
-    console.error("Error sending WhatsApp message:", error)
+    console.error("[WhatsApp] Error sending message:", error)
     return { success: false, error: "Failed to send message" }
   }
 }
@@ -50,23 +86,28 @@ export async function sendWhatsAppButtonMessage(
   bodyText: string,
   buttons: { id: string; title: string }[]
 ) {
-  if (!PHONE_NUMBER_ID || !ACCESS_TOKEN) {
+  const { phoneNumberId, accessToken, enabled } = await getWhatsAppConfig()
+  
+  if (!enabled || !phoneNumberId || !accessToken) {
     console.error("WhatsApp credentials not configured")
     return { success: false, error: "WhatsApp not configured" }
   }
 
+  const formattedTo = formatPhoneForWhatsApp(to)
+  console.log(`[WhatsApp] Sending button message to ${formattedTo}`)
+
   try {
     const response = await fetch(
-      `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`,
+      `${WHATSAPP_API_URL}/${phoneNumberId}/messages`,
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${ACCESS_TOKEN}`,
+          "Authorization": `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           messaging_product: "whatsapp",
-          to,
+          to: formattedTo,
           type: "interactive",
           interactive: {
             type: "button",
@@ -85,13 +126,14 @@ export async function sendWhatsAppButtonMessage(
     const data = await response.json()
 
     if (!response.ok) {
-      console.error("WhatsApp API error:", data)
+      console.error("[WhatsApp] API error:", data)
       return { success: false, error: data.error?.message || "Error sending button message" }
     }
 
+    console.log("[WhatsApp] Button message sent successfully")
     return { success: true, data }
   } catch (error) {
-    console.error("Error sending WhatsApp button message:", error)
+    console.error("[WhatsApp] Error sending button message:", error)
     return { success: false, error: "Failed to send button message" }
   }
 }

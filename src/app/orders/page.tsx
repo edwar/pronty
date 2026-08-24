@@ -1,19 +1,53 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { OrdersList } from "@/components/orders/orders-list"
 import { CreateOrderDialog } from "@/components/orders/create-order-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useOrderChannel } from "@/hooks/use-order-channel"
 import { Plus, Search, Filter } from "lucide-react"
+
+const EXPIRE_CHECK_INTERVAL = 5 * 60 * 1000 // 5 min para expirar atascados
 
 export default function OrdersPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [refreshKey, setRefreshKey] = useState(0)
+  const [commerceId, setCommerceId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchCommerceId = async () => {
+      try {
+        const res = await fetch("/api/orders")
+        const data = await res.json()
+        if (data.commerceId) setCommerceId(data.commerceId)
+      } catch {}
+    }
+    fetchCommerceId()
+  }, [])
+
+  const handleOrderUpdate = useCallback(() => {
+    setRefreshKey((prev) => prev + 1)
+  }, [])
+
+  useOrderChannel(commerceId ?? "", handleOrderUpdate)
+
+  // Expirar pedidos atascados cada 5 min (backup del Pusher)
+  useEffect(() => {
+    const tick = async () => {
+      try {
+        await fetch("/api/orders/expire-stuck", { method: "POST" })
+        setRefreshKey((prev) => prev + 1)
+      } catch {}
+    }
+
+    const interval = setInterval(tick, EXPIRE_CHECK_INTERVAL)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleOrderCreated = () => {
     setRefreshKey((prev) => prev + 1)

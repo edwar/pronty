@@ -130,6 +130,160 @@ export async function handleDriverMessage(phone: string, message: string) {
   )
 }
 
+export async function handleDriverButtonResponse(phone: string, buttonId: string) {
+  console.log(`[WhatsApp] Button response from ${phone}: ${buttonId}`)
+
+  const driver = await prisma.driver.findUnique({
+    where: { phone },
+  })
+
+  if (!driver) {
+    console.log(`[WhatsApp] Driver not found for phone: ${phone}`)
+    return
+  }
+
+  // Handle order accept/decline buttons
+  if (buttonId.startsWith("accept_")) {
+    const orderId = buttonId.replace("accept_", "")
+    
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+    })
+
+    if (!order) {
+      console.log(`[WhatsApp] Order not found: ${orderId}`)
+      return
+    }
+
+    if (order.status !== "ASSIGNING_DIRECT" && order.status !== "ASSIGNING_BROADCAST") {
+      await sendWhatsAppMessage({
+        to: phone,
+        message: `El pedido #${order.orderNumber} ya no está disponible.`,
+      })
+      return
+    }
+
+    // Accept the order
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: "ACCEPTED",
+        assignedAt: new Date(),
+        statusLogs: {
+          create: {
+            from: order.status,
+            to: "ACCEPTED",
+            note: `Pedido aceptado por ${driver.fullName} via WhatsApp`,
+            actorId: driver.userId,
+          },
+        },
+      },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `¡Pedido #${order.orderNumber} aceptado! Dirígete a:\n\n📍 Recogida: ${order.pickupAddress}\n🏠 Entrega: ${order.deliveryAddress}`,
+    })
+
+    console.log(`[WhatsApp] Order ${order.orderNumber} accepted by ${driver.fullName}`)
+    return
+  }
+
+  if (buttonId.startsWith("decline_")) {
+    const orderId = buttonId.replace("decline_", "")
+    
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+    })
+
+    if (!order) {
+      console.log(`[WhatsApp] Order not found: ${orderId}`)
+      return
+    }
+
+    // Decline the order - put it back to searching
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        driverId: null,
+        status: "ASSIGNING_BROADCAST",
+        statusLogs: {
+          create: {
+            from: order.status,
+            to: "ASSIGNING_BROADCAST",
+            note: `Pedido rechazado por ${driver.fullName} via WhatsApp`,
+            actorId: driver.userId,
+          },
+        },
+      },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `Has rechazado el pedido #${order.orderNumber}. Seguiremos buscando domiciliario.`,
+    })
+
+    console.log(`[WhatsApp] Order ${order.orderNumber} declined by ${driver.fullName}`)
+    return
+  }
+
+  // Handle activation buttons
+  if (buttonId === "activate") {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: { isAvailable: true, isActive: true },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `¡Perfecto ${driver.fullName}! Ya estás activo y recibirás pedidos.`,
+    })
+    return
+  }
+
+  if (buttonId === "deactivate") {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: { isAvailable: false, isActive: false },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `Has sido desactivado. Cuando quieras volver a trabajar, envíame "Hola".`,
+    })
+    return
+  }
+
+  // Handle check-in buttons
+  if (buttonId === "check_in") {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: { isAvailable: true, isActive: true },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `¡Perfecto ${driver.fullName}! Sigue recibiendo pedidos.`,
+    })
+    return
+  }
+
+  if (buttonId === "check_out") {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: { isAvailable: false, isActive: false },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `Has sido desactivado. Descansa bien.`,
+    })
+    return
+  }
+
+  console.log(`[WhatsApp] Unknown button: ${buttonId}`)
+}
+
 export async function sendCheckInMessages() {
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
 

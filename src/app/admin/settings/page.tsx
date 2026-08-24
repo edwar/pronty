@@ -39,6 +39,7 @@ interface GlobalSettings {
   whatsapp: {
     enabled: boolean
     phoneNumberId: string
+    accessToken: string
     checkInIntervalMinutes: number
   }
   credits: {
@@ -79,6 +80,10 @@ export default function AdminSettingsPage() {
     try {
       const response = await fetch("/api/admin/settings")
       const data = await response.json()
+      // Ensure whatsapp.accessToken exists
+      if (data?.whatsapp && !('accessToken' in data.whatsapp)) {
+        data.whatsapp.accessToken = ""
+      }
       setSettings(data)
     } catch (err) {
       console.error("Error fetching settings:", err)
@@ -255,6 +260,25 @@ export default function AdminSettingsPage() {
                       Se almacena de forma segura en la base de datos.
                     </p>
                   </div>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsappAccessToken">Access Token</Label>
+                    <Input
+                      id="whatsappAccessToken"
+                      type="password"
+                      value={settings.whatsapp.accessToken}
+                      disabled={!settings.whatsapp.enabled}
+                      onChange={(e) =>
+                        setSettings((prev) =>
+                          prev ? { ...prev, whatsapp: { ...prev.whatsapp, accessToken: e.target.value } } : prev
+                        )
+                      }
+                      placeholder="EAAxxxxxx"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Token de acceso de la API de WhatsApp Business
+                    </p>
                   </div>
                   <Separator />
                   <div className="space-y-2">

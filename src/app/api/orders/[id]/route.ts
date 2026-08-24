@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { triggerOrderUpdate } from "@/lib/pusher-utils"
 
 export async function GET(
   request: NextRequest,
@@ -117,6 +118,15 @@ export async function PUT(
       },
     })
 
+    if (status && status !== existingOrder.status) {
+      await triggerOrderUpdate(existingOrder.commerceId, {
+        orderId: existingOrder.id,
+        orderNumber: existingOrder.orderNumber,
+        status,
+        driverName: updatedOrder.driver?.fullName,
+      })
+    }
+
     return NextResponse.json({ message: "Pedido actualizado", order: updatedOrder })
   } catch (error) {
     console.error("Error updating order:", error)
@@ -196,6 +206,12 @@ export async function DELETE(
           ]
         : []),
     ])
+
+    await triggerOrderUpdate(order.commerceId, {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      status: "CANCELLED",
+    })
 
     return NextResponse.json({ message: "Pedido cancelado correctamente", refunded: isRefundable })
   } catch (error) {

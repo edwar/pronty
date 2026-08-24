@@ -14,6 +14,7 @@ const defaultGlobalSettings = {
   whatsapp: {
     enabled: false,
     phoneNumberId: "",
+    accessToken: "",
     checkInIntervalMinutes: 1600,
   },
   credits: {

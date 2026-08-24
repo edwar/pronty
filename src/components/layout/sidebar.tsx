@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useUser } from "@/hooks/use-user"
+import { Logo } from "@/components/logo"
 
 interface SidebarProps {
   collapsed?: boolean
@@ -56,14 +57,10 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         collapsed ? "justify-center px-2" : "px-5"
       )}>
         {collapsed ? (
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-            P
-          </div>
+          <Logo variant="icon" className="h-8 w-8" />
         ) : (
           <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-              P
-            </div>
+            <Logo variant="icon" className="h-7 w-7" />
             <span className="text-sm font-semibold tracking-tight">Pronty</span>
           </div>
         )}

@@ -83,15 +83,15 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check if phone already exists (if provided)
+    // Check if phone already exists for ADMIN_MASTER role (if provided)
     if (phone) {
-      const existingPhone = await prisma.user.findUnique({
-        where: { phone },
+      const existingPhone = await prisma.user.findFirst({
+        where: { phone, role: "ADMIN_MASTER" },
       })
 
       if (existingPhone) {
         return NextResponse.json(
-          { error: "El teléfono ya está en uso" },
+          { error: "El teléfono ya está en uso por otro administrador" },
           { status: 400 }
         )
       }

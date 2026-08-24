@@ -65,6 +65,20 @@ export async function PUT(request: Request) {
     const body = await request.json()
     const { name, phone, commerce } = body
 
+    // Check phone uniqueness within the same role
+    if (phone) {
+      const existingPhone = await prisma.user.findFirst({
+        where: { phone, role: session.user.role as any, id: { not: session.user.id } },
+      })
+
+      if (existingPhone) {
+        return NextResponse.json(
+          { error: "El teléfono ya está en uso por otro usuario con el mismo rol" },
+          { status: 400 }
+        )
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: {

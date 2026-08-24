@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     })
 
-    return NextResponse.json({ orders })
+    return NextResponse.json({ orders, commerceId: commerce.id })
   } catch (error) {
     console.error("Error fetching orders:", error)
     return NextResponse.json({ error: "Error al obtener los pedidos" }, { status: 500 })

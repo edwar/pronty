@@ -16,7 +16,7 @@ model User {
   id            String    @id @default(uuid())
   email         String    @unique
   name          String?
-  phone         String?   @unique
+  phone         String?
   role          UserRole  @default(COMMERCER)
   avatarUrl     String?
   emailVerified Boolean   @default(false)
@@ -30,7 +30,6 @@ model User {
   driver        Driver?
   sessions      Session[]
   accounts      Account[]
-
 
   @@map("users")
 }

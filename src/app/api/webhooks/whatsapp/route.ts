@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { handleDriverMessage } from "@/lib/whatsapp/driver-conversation"
+import { handleDriverMessage, handleDriverButtonResponse } from "@/lib/whatsapp/driver-conversation"
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "pronty-verify-token"
 
@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log("[WhatsApp Webhook] Received:", JSON.stringify(body, null, 2))
 
     if (body.object !== "whatsapp_business_account") {
       return NextResponse.json({ error: "Invalid object" }, { status: 400 })
@@ -35,13 +36,18 @@ export async function POST(request: NextRequest) {
         const messages = change.value?.messages || []
 
         for (const message of messages) {
-          if (message.type !== "text") continue
-
           const phone = message.from
-          const text = message.text?.body
 
-          if (phone && text) {
-            await handleDriverMessage(phone, text)
+          if (message.type === "text") {
+            const text = message.text?.body
+            if (phone && text) {
+              await handleDriverMessage(phone, text)
+            }
+          } else if (message.type === "interactive") {
+            const buttonId = message.interactive?.button_reply?.id
+            if (phone && buttonId) {
+              await handleDriverButtonResponse(phone, buttonId)
+            }
           }
         }
       }

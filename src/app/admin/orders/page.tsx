@@ -107,6 +107,19 @@ export default function AdminOrdersPage() {
     fetchOrders()
   }, [])
 
+  // Expirar pedidos atascados y refrescar cada 30s
+  useEffect(() => {
+    const tick = async () => {
+      try {
+        await fetch("/api/admin/orders/expire-stuck", { method: "POST" })
+      } catch {}
+      fetchOrders()
+    }
+
+    const interval = setInterval(tick, 30_000)
+    return () => clearInterval(interval)
+  }, [])
+
   const fetchOrders = async () => {
     try {
       const response = await fetch("/api/admin/orders")

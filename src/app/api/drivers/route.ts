@@ -19,7 +19,18 @@ export async function POST(request: Request) {
 
     if (existingPhone) {
       return NextResponse.json(
-        { error: "Este teléfono ya está registrado" },
+        { error: "Este teléfono ya está registrado como domiciliario" },
+        { status: 400 }
+      )
+    }
+
+    const existingUserWithRole = await prisma.user.findFirst({
+      where: { phone, role: "DRIVER" },
+    })
+
+    if (existingUserWithRole) {
+      return NextResponse.json(
+        { error: "Este teléfono ya está registrado como domiciliario" },
         { status: 400 }
       )
     }
