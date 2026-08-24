@@ -6,9 +6,16 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { fullName, phone, email, vehicleType, licensePlate, zone } = body
 
-    if (!fullName || !phone || !vehicleType || !zone) {
+    if (!fullName || !phone || !email || !vehicleType || !zone) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios" },
+        { status: 400 }
+      )
+    }
+
+    if (!email.includes("@")) {
+      return NextResponse.json(
+        { error: "El email no es válido" },
         { status: 400 }
       )
     }
@@ -37,7 +44,7 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.create({
       data: {
-        email: email || `driver-${Date.now()}@pronty.local`,
+        email: email.toLowerCase().trim(),
         name: fullName,
         phone,
         role: "DRIVER",

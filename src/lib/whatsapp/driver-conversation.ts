@@ -1,23 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { sendWhatsAppMessage, sendWhatsAppButtonMessage } from "./index"
 
-type ConversationState =
-  | "idle"
-  | "active"
-  | "inactive"
-  | "waiting_check_in"
-  | "waiting_pickup_confirm"
-  | "waiting_delivery_confirm"
-
-interface DriverConversation {
-  driverId: string
-  phone: string
-  state: ConversationState
-  lastActivity: Date
-}
-
-const conversations = new Map<string, DriverConversation>()
-
 function normalizePhone(phone: string): string {
   return phone.replace(/[\s\-\(\)\+]/g, "")
 }
@@ -36,18 +19,17 @@ async function findDriverByPhone(phone: string) {
   }) || null
 }
 
-function getConversation(phone: string, driverId: string): DriverConversation {
-  let conversation = conversations.get(phone)
-  if (!conversation) {
-    conversation = {
-      driverId,
-      phone,
-      state: "idle",
-      lastActivity: new Date(),
-    }
-    conversations.set(phone, conversation)
+async function getCheckInIntervalMinutes(): Promise<number> {
+  try {
+    const config = await prisma.systemConfig.findUnique({
+      where: { key: "global_settings" },
+    })
+    const settings = config?.value as Record<string, unknown>
+    const whatsapp = settings?.whatsapp as Record<string, unknown> | undefined
+    return (whatsapp?.checkInIntervalMinutes as number) || 1600
+  } catch {
+    return 1600
   }
-  return conversation
 }
 
 export async function handleDriverMessage(phone: string, message: string) {
@@ -62,21 +44,51 @@ export async function handleDriverMessage(phone: string, message: string) {
   }
 
   const normalizedMessage = message.toLowerCase().trim()
-  const conversation = getConversation(phone, driver.id)
-  conversation.lastActivity = new Date()
+  const now = new Date()
 
-  // Activación inicial
-  if (normalizedMessage === "hola" || normalizedMessage === "inicio" || normalizedMessage === "start") {
+  // Primera activación: needs_activation → active
+  if (driver.conversationStage === "needs_activation") {
     await prisma.driver.update({
       where: { id: driver.id },
-      data: { isAvailable: true, isActive: true },
+      data: {
+        isAvailable: true,
+        isActive: true,
+        conversationStage: "active",
+        conversationStartedAt: now,
+        conversationLastActivity: now,
+        totalConversations: { increment: 1 },
+      },
     })
-
-    conversation.state = "active"
 
     await sendWhatsAppMessage({
       to: phone,
-      message: `¡Hola ${driver.fullName}! ✅ Estás activo y recibirás pedidos.`,
+      message: `¡Bienvenido ${driver.fullName}! ✅ Tu cuenta está activa y lista para recibir pedidos.\n\nCada vez que recibas un pedido, te llegará por aquí. ¡Éxito!`,
+    })
+    return
+  }
+
+  // Actualizar última actividad
+  await prisma.driver.update({
+    where: { id: driver.id },
+    data: { conversationLastActivity: now },
+  })
+
+  // Si estaba en warning o expired, reiniciar conversación
+  if (driver.conversationStage === "warning" || driver.conversationStage === "expired") {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: {
+        conversationStage: "active",
+        conversationStartedAt: now,
+        isAvailable: true,
+        isActive: true,
+        totalConversations: { increment: 1 },
+      },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `¡Hola de nuevo ${driver.fullName}! ✅ Nueva conversación iniciada. Estás activo y recibirás pedidos.`,
     })
     return
   }
@@ -85,11 +97,12 @@ export async function handleDriverMessage(phone: string, message: string) {
   if (normalizedMessage === "sigo" || normalizedMessage === "sigo aquí" || normalizedMessage === "sigo trabajando") {
     await prisma.driver.update({
       where: { id: driver.id },
-      data: { isAvailable: true, isActive: true },
+      data: {
+        isAvailable: true,
+        isActive: true,
+        conversationStage: "active",
+      },
     })
-
-    conversation.state = "active"
-    conversation.lastActivity = new Date()
 
     await sendWhatsAppMessage({
       to: phone,
@@ -102,10 +115,12 @@ export async function handleDriverMessage(phone: string, message: string) {
   if (normalizedMessage === "no" || normalizedMessage === "ya no" || normalizedMessage === "descanso") {
     await prisma.driver.update({
       where: { id: driver.id },
-      data: { isAvailable: false, isActive: false },
+      data: {
+        isAvailable: false,
+        isActive: false,
+        conversationStage: "inactive",
+      },
     })
-
-    conversation.state = "inactive"
 
     await sendWhatsAppMessage({
       to: phone,
@@ -135,15 +150,21 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
     return
   }
 
-  const conversation = getConversation(phone, driver.id)
+  const now = new Date()
 
   // === ACTIVACIÓN / DESACTIVACIÓN ===
   if (buttonId === "activate") {
     await prisma.driver.update({
       where: { id: driver.id },
-      data: { isAvailable: true, isActive: true },
+      data: {
+        isAvailable: true,
+        isActive: true,
+        conversationStage: "active",
+        conversationStartedAt: driver.conversationStartedAt || now,
+        conversationLastActivity: now,
+        ...(driver.conversationStage === "needs_activation" ? { totalConversations: { increment: 1 } } : {}),
+      },
     })
-    conversation.state = "active"
 
     await sendWhatsAppMessage({
       to: phone,
@@ -155,9 +176,12 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
   if (buttonId === "deactivate") {
     await prisma.driver.update({
       where: { id: driver.id },
-      data: { isAvailable: false, isActive: false },
+      data: {
+        isAvailable: false,
+        isActive: false,
+        conversationStage: "inactive",
+      },
     })
-    conversation.state = "inactive"
 
     await sendWhatsAppMessage({
       to: phone,
@@ -170,10 +194,13 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
   if (buttonId === "check_in") {
     await prisma.driver.update({
       where: { id: driver.id },
-      data: { isAvailable: true, isActive: true },
+      data: {
+        isAvailable: true,
+        isActive: true,
+        conversationStage: "active",
+        conversationLastActivity: now,
+      },
     })
-    conversation.state = "active"
-    conversation.lastActivity = new Date()
 
     await sendWhatsAppMessage({
       to: phone,
@@ -185,13 +212,34 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
   if (buttonId === "check_out") {
     await prisma.driver.update({
       where: { id: driver.id },
-      data: { isAvailable: false, isActive: false },
+      data: {
+        isAvailable: false,
+        isActive: false,
+        conversationStage: "inactive",
+      },
     })
-    conversation.state = "inactive"
 
     await sendWhatsAppMessage({
       to: phone,
       message: `Has sido desactivado. Descansa bien.`,
+    })
+    return
+  }
+
+  // === RENOVAR SESIÓN ===
+  if (buttonId === "renew_session") {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: {
+        conversationStage: "active",
+        conversationStartedAt: now,
+        conversationLastActivity: now,
+      },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `¡Sesión renovada! ✅ Sigue recibiendo pedidos.`,
     })
     return
   }
@@ -234,8 +282,6 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
         },
       },
     })
-
-    conversation.state = "waiting_pickup_confirm"
 
     // Enviar ubicación de recogida con botón para confirmar
     await sendWhatsAppButtonMessage(
@@ -318,8 +364,6 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
       },
     })
 
-    conversation.state = "waiting_delivery_confirm"
-
     // Preguntar si entregó
     await sendWhatsAppButtonMessage(
       phone,
@@ -380,8 +424,6 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
       },
     })
 
-    conversation.state = "active"
-
     await sendWhatsAppMessage({
       to: phone,
       message: `✅ ¡Pedido #${order.orderNumber} entregado con éxito!\n\n💰 Tu ganancia: $${netEarning.toLocaleString("es-CO")}\n\nGracias por trabajar con Pronty.`,
@@ -438,11 +480,6 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
       },
     })
 
-    // NO reembolsar crédito al comercio (el viaje se hizo)
-    // El comercio ya pagó cuando creó el pedido
-
-    conversation.state = "active"
-
     await sendWhatsAppMessage({
       to: phone,
       message: `📦 Pedido #${order.orderNumber} marcado como "No entregado"\n\n💰 Tu ganancia: $${netEarning.toLocaleString("es-CO")}\n\nEl comercio será notificado.`,
@@ -456,34 +493,95 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
 }
 
 export async function sendCheckInMessages() {
-  const threshold = new Date(Date.now() - 30 * 60 * 1000)
+  const intervalMinutes = await getCheckInIntervalMinutes()
+  const warningMinutes = Math.max(intervalMinutes * 1.5, 60)
+  const threshold = new Date(Date.now() - intervalMinutes * 60 * 1000)
+  const warningThreshold = new Date(Date.now() - warningMinutes * 60 * 1000)
 
-  for (const [phone, conversation] of conversations.entries()) {
-    if (conversation.state === "active" && conversation.lastActivity < threshold) {
-      conversation.state = "waiting_check_in"
+  // Buscar drivers activos que necesiten check-in
+  const activeDrivers = await prisma.driver.findMany({
+    where: {
+      conversationStage: "active",
+      isActive: true,
+      conversationLastActivity: { lt: threshold },
+    },
+    include: { user: true },
+  })
 
-      await sendWhatsAppButtonMessage(
-        phone,
-        "¿Sigues trabajando? Confirma para seguir recibiendo pedidos.",
-        [
-          { id: "check_in", title: "Sigo aquí" },
-          { id: "check_out", title: "Ya no" },
-        ]
-      )
+  for (const driver of activeDrivers) {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: { conversationStage: "waiting_renewal" },
+    })
 
-      conversation.lastActivity = new Date()
-    }
+    await sendWhatsAppButtonMessage(
+      driver.phone,
+      `¿Sigues trabajando, ${driver.fullName}? Confirma para seguir recibiendo pedidos.`,
+      [
+        { id: "check_in", title: "Sigo aquí" },
+        { id: "check_out", title: "Ya no" },
+      ]
+    )
   }
-}
 
-export function getConversationState(phone: string) {
-  return conversations.get(phone)
+  // Buscar drivers en waiting_renewal que necesiten advertencia
+  const renewalDrivers = await prisma.driver.findMany({
+    where: {
+      conversationStage: "waiting_renewal",
+      isActive: true,
+      conversationLastActivity: { lt: warningThreshold },
+    },
+    include: { user: true },
+  })
+
+  for (const driver of renewalDrivers) {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: { conversationStage: "warning" },
+    })
+
+    await sendWhatsAppButtonMessage(
+      driver.phone,
+      `⚠️ ${driver.fullName}, tu sesión está por expirar. Si no la renuevas, deberás iniciar una nueva conversación.`,
+      [
+        { id: "renew_session", title: "Renovar sesión" },
+        { id: "check_out", title: "Descansar" },
+      ]
+    )
+  }
+
+  // Buscar drivers en warning que hayan expirado (2x el intervalo)
+  const expiredThreshold = new Date(Date.now() - intervalMinutes * 2 * 60 * 1000)
+  const expiredDrivers = await prisma.driver.findMany({
+    where: {
+      conversationStage: "warning",
+      isActive: true,
+      conversationLastActivity: { lt: expiredThreshold },
+    },
+  })
+
+  for (const driver of expiredDrivers) {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: {
+        conversationStage: "expired",
+        isActive: false,
+        isAvailable: false,
+      },
+    })
+
+    await sendWhatsAppMessage({
+      to: driver.phone,
+      message: `Tu sesión ha expirado. Para volver a trabajar, envía cualquier mensaje y se iniciará una nueva conversación.`,
+    })
+  }
 }
 
 export function getActiveDriversCount() {
-  let count = 0
-  for (const conversation of conversations.values()) {
-    if (conversation.state === "active") count++
-  }
-  return count
+  return prisma.driver.count({
+    where: {
+      isActive: true,
+      conversationStage: "active",
+    },
+  })
 }

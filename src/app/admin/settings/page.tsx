@@ -40,6 +40,7 @@ interface GlobalSettings {
     enabled: boolean
     phoneNumberId: string
     accessToken: string
+    businessPhone: string
     checkInIntervalMinutes: number
   }
   credits: {
@@ -278,6 +279,24 @@ export default function AdminSettingsPage() {
                     />
                     <p className="text-xs text-muted-foreground">
                       Token de acceso de la API de WhatsApp Business
+                    </p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label htmlFor="businessPhone">Número de WhatsApp Business</Label>
+                    <Input
+                      id="businessPhone"
+                      value={settings.whatsapp.businessPhone}
+                      disabled={!settings.whatsapp.enabled}
+                      onChange={(e) =>
+                        setSettings((prev) =>
+                          prev ? { ...prev, whatsapp: { ...prev.whatsapp, businessPhone: e.target.value } } : prev
+                        )
+                      }
+                      placeholder="5730012345678"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Número en formato internacional sin + (ej: 5730012345678). Se usa para generar links de activación.
                     </p>
                   </div>
                   <Separator />

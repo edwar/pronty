@@ -142,6 +142,11 @@ model Driver {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
+  conversationStartedAt    DateTime?
+  conversationLastActivity DateTime?
+  conversationStage        String    @default("needs_activation")
+  totalConversations       Int       @default(0)
+
   user            User         @relation(fields: [userId], references: [id])
   orders          Order[]
   driverEarnings  DriverEarning[]
@@ -151,6 +156,7 @@ model Driver {
 
   @@index([isAvailable, isActive, isApproved])
   @@index([zone])
+  @@index([conversationStage])
   @@map("drivers")
 }
 

@@ -182,14 +182,16 @@ export default function DriverRegisterPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email (opcional)</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input 
                   id="email" 
                   type="email" 
                   placeholder="tu@email.com" 
                   value={formData.email}
                   onChange={handleChange}
+                  required
                 />
+                <p className="text-xs text-muted-foreground">Recibirás las instrucciones de activación en este correo</p>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? <Loading text="Enviando..." className="flex-row gap-2" /> : "Enviar Solicitud"}

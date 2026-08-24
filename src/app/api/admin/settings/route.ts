@@ -15,6 +15,7 @@ const defaultGlobalSettings = {
     enabled: false,
     phoneNumberId: "",
     accessToken: "",
+    businessPhone: "",
     checkInIntervalMinutes: 1600,
   },
   credits: {
