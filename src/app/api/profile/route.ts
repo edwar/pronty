@@ -98,7 +98,6 @@ export async function PUT(request: Request) {
           data: {
             name: commerce.name || undefined,
             description: commerce.description || undefined,
-            address: commerce.address || undefined,
             phone: commerce.phone || undefined,
             whatsapp: commerce.whatsapp || undefined,
           },
@@ -115,7 +114,6 @@ export async function PUT(request: Request) {
             name: commerce.name,
             slug,
             description: commerce.description || null,
-            address: commerce.address || null,
             phone: commerce.phone || null,
             whatsapp: commerce.whatsapp || null,
           },

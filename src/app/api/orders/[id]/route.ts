@@ -26,7 +26,6 @@ export async function GET(
             id: true,
             name: true,
             phone: true,
-            address: true,
           },
         },
         driver: {

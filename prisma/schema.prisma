@@ -99,13 +99,9 @@ model Commerce {
   name        String
   slug        String   @unique
   description String?
-  address     String?
   phone       String?
   whatsapp    String?
   logoUrl     String?
-  city        String?
-  lat         Decimal? @db.Decimal(10, 8)
-  lng         Decimal? @db.Decimal(11, 8)
   isActive    Boolean  @default(true)
   credits     Int      @default(0)
   createdAt   DateTime @default(now())
@@ -122,7 +118,6 @@ model Commerce {
 
 
   @@index([isActive])
-  @@index([city])
   @@map("commerces")
 }
 
@@ -131,21 +126,23 @@ model Commerce {
 // ============================================
 
 model Branch {
-  id          String   @id @default(uuid())
-  commerceId  String
-  name        String
-  address     String
-  phone       String?
-  city        String?
-  lat         Decimal? @db.Decimal(10, 8)
-  lng         Decimal? @db.Decimal(11, 8)
-  isActive    Boolean  @default(true)
-  isDefault   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(uuid())
+  commerceId    String
+  name          String
+  address       String
+  phone         String?
+  city          String?
+  lat           Decimal? @db.Decimal(10, 8)
+  lng           Decimal? @db.Decimal(11, 8)
+  orderPrefix   String   @default("ORD")
+  workingHours  Json     @default("{\"monday\":{\"open\":\"08:00\",\"close\":\"20:00\",\"active\":true},\"tuesday\":{\"open\":\"08:00\",\"close\":\"20:00\",\"active\":true},\"wednesday\":{\"open\":\"08:00\",\"close\":\"20:00\",\"active\":true},\"thursday\":{\"open\":\"08:00\",\"close\":\"20:00\",\"active\":true},\"friday\":{\"open\":\"08:00\",\"close\":\"20:00\",\"active\":true},\"saturday\":{\"open\":\"09:00\",\"close\":\"18:00\",\"active\":true},\"sunday\":{\"open\":\"09:00\",\"close\":\"14:00\",\"active\":false}}")
+  isActive      Boolean  @default(true)
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  commerce    Commerce @relation(fields: [commerceId], references: [id], onDelete: Cascade)
-  orders      Order[]
+  commerce      Commerce @relation(fields: [commerceId], references: [id], onDelete: Cascade)
+  orders        Order[]
 
   @@index([commerceId, isActive])
   @@map("branches")

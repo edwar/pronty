@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
   Dialog, DialogContent, DialogDescription, DialogFooter, 
   DialogHeader, DialogTitle 
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { 
   Store, Plus, MoreHorizontal, Pencil, Trash2, 
-  MapPin, Star, Loader2 
+  Star, Loader2, Clock 
 } from "lucide-react"
 import { Loading } from "@/components/ui/loading"
 
@@ -32,6 +33,8 @@ interface Branch {
   city: string | null
   lat: number | null
   lng: number | null
+  orderPrefix: string
+  workingHours: Record<string, { open: string; close: string; active: boolean }>
   isActive: boolean
   isDefault: boolean
 }
@@ -43,7 +46,36 @@ interface BranchFormData {
   city: string
   lat: string
   lng: string
+  orderPrefix: string
+  workingHours: Record<string, { open: string; close: string; active: boolean }>
   isDefault: boolean
+}
+
+const colombianCities = [
+  "Bogotá", "Medellín", "Cali", "Barranquilla", "Bucaramanga",
+  "Cartagena", "Cúcuta", "Ibagué", "Pereira", "Santa Marta",
+  "Villavicencio", "Manizales", "Neiva", "Pasto", "Armenia",
+  "Popayán", "Montería", "Sincelejo", "Valledupar", "Tulúa",
+]
+
+const daysOfWeek = [
+  { key: "monday", label: "Lun" },
+  { key: "tuesday", label: "Mar" },
+  { key: "wednesday", label: "Mié" },
+  { key: "thursday", label: "Jue" },
+  { key: "friday", label: "Vie" },
+  { key: "saturday", label: "Sáb" },
+  { key: "sunday", label: "Dom" },
+]
+
+const defaultWorkingHours: Record<string, { open: string; close: string; active: boolean }> = {
+  monday: { open: "08:00", close: "20:00", active: true },
+  tuesday: { open: "08:00", close: "20:00", active: true },
+  wednesday: { open: "08:00", close: "20:00", active: true },
+  thursday: { open: "08:00", close: "20:00", active: true },
+  friday: { open: "08:00", close: "20:00", active: true },
+  saturday: { open: "09:00", close: "18:00", active: true },
+  sunday: { open: "09:00", close: "14:00", active: false },
 }
 
 const initialFormData: BranchFormData = {
@@ -53,6 +85,8 @@ const initialFormData: BranchFormData = {
   city: "",
   lat: "",
   lng: "",
+  orderPrefix: "ORD",
+  workingHours: { ...defaultWorkingHours },
   isDefault: false,
 }
 
@@ -64,6 +98,7 @@ export function BranchesSection() {
   const [formData, setFormData] = useState<BranchFormData>(initialFormData)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showHours, setShowHours] = useState(false)
 
   useEffect(() => {
     fetchBranches()
@@ -93,6 +128,8 @@ export function BranchesSection() {
         city: branch.city || "",
         lat: branch.lat?.toString() || "",
         lng: branch.lng?.toString() || "",
+        orderPrefix: branch.orderPrefix,
+        workingHours: branch.workingHours || { ...defaultWorkingHours },
         isDefault: branch.isDefault,
       })
     } else {
@@ -100,6 +137,7 @@ export function BranchesSection() {
       setFormData(initialFormData)
     }
     setError(null)
+    setShowHours(false)
     setIsDialogOpen(true)
   }
 
@@ -175,6 +213,32 @@ export function BranchesSection() {
     }
   }
 
+  const toggleWorkingDay = (day: string) => {
+    setFormData(prev => ({
+      ...prev,
+      workingHours: {
+        ...prev.workingHours,
+        [day]: {
+          ...prev.workingHours[day],
+          active: !prev.workingHours[day]?.active,
+        },
+      },
+    }))
+  }
+
+  const updateWorkingHour = (day: string, field: "open" | "close", value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      workingHours: {
+        ...prev.workingHours,
+        [day]: {
+          ...prev.workingHours[day],
+          [field]: value,
+        },
+      },
+    }))
+  }
+
   if (isLoading) {
     return (
       <Card className="border-border/60">
@@ -195,7 +259,7 @@ export function BranchesSection() {
               Sucursales
             </CardTitle>
             <CardDescription className="text-xs">
-              Administra las ubicaciones de tu negocio
+              Administra las ubicaciones, horarios y prefijos de tu negocio
             </CardDescription>
           </div>
           <Button size="sm" onClick={() => handleOpenDialog()}>
@@ -222,69 +286,79 @@ export function BranchesSection() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Dirección</TableHead>
                 <TableHead>Ciudad</TableHead>
-                <TableHead>Estado</TableHead>
+                <TableHead>Prefijo</TableHead>
+                <TableHead>Horario</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {branches.map((branch) => (
-                <TableRow key={branch.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{branch.name}</span>
-                      {branch.isDefault && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                          <Star className="mr-1 h-3 w-3" />
-                          Default
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
-                    {branch.address}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {branch.city || "-"}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={branch.isActive ? "default" : "secondary"}>
-                      {branch.isActive ? "Activa" : "Inactiva"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="inline-flex h-8 w-8 items-center justify-center rounded-lg hover:bg-muted">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleOpenDialog(branch)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Editar
-                        </DropdownMenuItem>
-                        {!branch.isDefault && (
-                          <DropdownMenuItem onClick={() => handleToggleDefault(branch)}>
-                            <Star className="mr-2 h-4 w-4" />
-                            Marcar como default
-                          </DropdownMenuItem>
+              {branches.map((branch) => {
+                const activeDays = Object.values(branch.workingHours || {}).filter(d => d.active).length
+                return (
+                  <TableRow key={branch.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{branch.name}</span>
+                        {branch.isDefault && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                            <Star className="mr-1 h-3 w-3" />
+                            Default
+                          </Badge>
                         )}
-                        <DropdownMenuItem 
-                          onClick={() => handleDelete(branch.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground max-w-[180px] truncate">
+                      {branch.address}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {branch.city || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {branch.orderPrefix}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {activeDays}/7 días
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="inline-flex h-8 w-8 items-center justify-center rounded-lg hover:bg-muted">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenDialog(branch)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          {!branch.isDefault && (
+                            <DropdownMenuItem onClick={() => handleToggleDefault(branch)}>
+                              <Star className="mr-2 h-4 w-4" />
+                              Marcar como default
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(branch.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         )}
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingBranch ? "Editar Sucursal" : "Nueva Sucursal"}
@@ -335,12 +409,19 @@ export function BranchesSection() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="branchCity">Ciudad</Label>
-                  <Input
-                    id="branchCity"
+                  <Select
                     value={formData.city}
-                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                    placeholder="Bogotá"
-                  />
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, city: value || "" }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar ciudad" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {colombianCities.map(city => (
+                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -367,6 +448,72 @@ export function BranchesSection() {
                     placeholder="-74.0721"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="branchPrefix">Prefijo de Pedidos</Label>
+                <Input
+                  id="branchPrefix"
+                  value={formData.orderPrefix}
+                  onChange={(e) => setFormData(prev => ({ ...prev, orderPrefix: e.target.value.toUpperCase() }))}
+                  placeholder="ORD"
+                  className="max-w-[150px] font-mono"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Ejemplo: <span className="font-mono">{formData.orderPrefix || "ORD"}-0001</span>
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Horario de Atención</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowHours(!showHours)}
+                    className="h-7 text-xs"
+                  >
+                    <Clock className="mr-1 h-3 w-3" />
+                    {showHours ? "Ocultar" : "Configurar"}
+                  </Button>
+                </div>
+                {showHours && (
+                  <div className="space-y-2 rounded-md border p-3">
+                    {daysOfWeek.map(day => {
+                      const dayHours = formData.workingHours[day.key]
+                      return (
+                        <div key={day.key} className="flex items-center gap-2">
+                          <Switch
+                            checked={dayHours?.active ?? false}
+                            onCheckedChange={() => toggleWorkingDay(day.key)}
+                            className="scale-75"
+                          />
+                          <span className="text-xs w-8">{day.label}</span>
+                          {dayHours?.active ? (
+                            <>
+                              <Input
+                                type="time"
+                                value={dayHours.open}
+                                onChange={(e) => updateWorkingHour(day.key, "open", e.target.value)}
+                                className="h-7 w-24 text-xs"
+                              />
+                              <span className="text-xs text-muted-foreground">a</span>
+                              <Input
+                                type="time"
+                                value={dayHours.close}
+                                onChange={(e) => updateWorkingHour(day.key, "close", e.target.value)}
+                                className="h-7 w-24 text-xs"
+                              />
+                            </>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Cerrado</span>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2">

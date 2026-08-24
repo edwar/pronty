@@ -149,9 +149,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "La tarifa debe ser mayor a 0" }, { status: 400 })
     }
 
-    // Generate Order Number
-    const count = await prisma.order.count()
-    const orderNumber = `ORD-${String(count + 1).padStart(4, "0")}`
+    // Get branch prefix for order number
+    let orderPrefix = "ORD"
+    if (branchId) {
+      const branch = await prisma.branch.findUnique({
+        where: { id: branchId },
+        select: { orderPrefix: true },
+      })
+      if (branch) {
+        orderPrefix = branch.orderPrefix
+      }
+    }
+
+    // Generate Order Number with branch prefix
+    const prefixCount = await prisma.order.count({
+      where: branchId ? { branchId } : { commerceId: commerce.id },
+    })
+    const orderNumber = `${orderPrefix}-${String(prefixCount + 1).padStart(4, "0")}`
 
     const initialStatus =
       assignmentType === "DIRECT" && driverId

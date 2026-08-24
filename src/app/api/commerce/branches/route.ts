@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, address, phone, city, lat, lng, isDefault } = body
+    const { name, address, phone, city, lat, lng, isDefault, orderPrefix, workingHours } = body
 
     if (!name || !address) {
       return NextResponse.json(
@@ -78,6 +78,8 @@ export async function POST(request: Request) {
         lat: lat ? parseFloat(lat) : null,
         lng: lng ? parseFloat(lng) : null,
         isDefault: isDefault || false,
+        orderPrefix: orderPrefix || "ORD",
+        workingHours: workingHours || undefined,
       },
     })
 
@@ -107,7 +109,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const { id, name, address, phone, city, lat, lng, isDefault, isActive } = body
+    const { id, name, address, phone, city, lat, lng, isDefault, isActive, orderPrefix, workingHours } = body
 
     if (!id) {
       return NextResponse.json({ error: "ID de sucursal requerido" }, { status: 400 })
@@ -141,6 +143,8 @@ export async function PUT(request: Request) {
         lng: lng !== undefined ? (lng ? parseFloat(lng) : null) : undefined,
         isDefault: isDefault !== undefined ? isDefault : undefined,
         isActive: isActive !== undefined ? isActive : undefined,
+        orderPrefix: orderPrefix !== undefined ? orderPrefix : undefined,
+        workingHours: workingHours !== undefined ? workingHours : undefined,
       },
     })
 

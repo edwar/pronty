@@ -49,12 +49,8 @@ export async function GET(request: Request) {
             slug: user.commerce.slug,
             isActive: user.commerce.isActive,
             credits: user.commerce.credits,
-            address: user.commerce.address,
             phone: user.commerce.phone,
             whatsapp: user.commerce.whatsapp,
-            city: user.commerce.city,
-            lat: user.commerce.lat,
-            lng: user.commerce.lng,
           }
         : null,
       stats: {
@@ -85,7 +81,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const { commerceName, commercePhone, commerceAddress, commerceWhatsapp, commerceCity, commerceLat, commerceLng } = body
+    const { commerceName, commercePhone, commerceWhatsapp } = body
 
     if (session.user.role === "COMMERCER") {
       const existingCommerce = await prisma.commerce.findUnique({
@@ -98,11 +94,7 @@ export async function PUT(request: Request) {
           data: {
             name: commerceName || undefined,
             phone: commercePhone || undefined,
-            address: commerceAddress || undefined,
             whatsapp: commerceWhatsapp || undefined,
-            city: commerceCity || undefined,
-            lat: commerceLat ?? undefined,
-            lng: commerceLng ?? undefined,
           },
         })
       }
