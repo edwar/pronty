@@ -85,7 +85,6 @@ export default function AdminSettingsPage() {
     try {
       const response = await fetch("/api/admin/settings")
       const data = await response.json()
-      // Ensure whatsapp.accessToken exists
       if (data?.whatsapp && !('accessToken' in data.whatsapp)) {
         data.whatsapp.accessToken = ""
       }
@@ -127,7 +126,7 @@ export default function AdminSettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         <div className="flex items-end justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
@@ -153,100 +152,159 @@ export default function AdminSettingsPage() {
         {isLoading ? (
           <Loading text="Cargando configuración..." className="py-16" />
         ) : settings ? (
-          <div className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <Card className="border-border/60">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Package className="h-4 w-4 text-success" />
-                    Pedidos
-                  </CardTitle>
-                  <CardDescription>Tiempos de asignación y expiración</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="directAssignmentTimeout">Asignación directa (min)</Label>
-                      <NumberInput
-                        id="directAssignmentTimeout"
-                        min={1}
-                        value={settings.orders.directAssignmentTimeout}
-                        onValueChange={(v) =>
-                          setSettings((prev) =>
-                            prev ? { ...prev, orders: { ...prev.orders, directAssignmentTimeout: v || 1 } } : prev
-                          )
-                        }
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Tiempo que tiene un domiciliario para aceptar
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="broadcastTimeout">Broadcast (min)</Label>
-                      <NumberInput
-                        id="broadcastTimeout"
-                        min={1}
-                        value={settings.orders.broadcastTimeout}
-                        onValueChange={(v) =>
-                          setSettings((prev) =>
-                            prev ? { ...prev, orders: { ...prev.orders, broadcastTimeout: v || 1 } } : prev
-                          )
-                        }
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Duración del broadcast de pedidos
-                      </p>
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <Label htmlFor="orderExpiryMinutes">Expiración del pedido (min)</Label>
-                    <NumberInput
-                      id="orderExpiryMinutes"
-                      min={5}
-                      value={settings.orders.orderExpiryMinutes}
-                      onValueChange={(v) =>
-                        setSettings((prev) =>
-                          prev ? { ...prev, orders: { ...prev.orders, orderExpiryMinutes: v || 5 } } : prev
-                        )
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Tiempo máximo sin asignar antes de expirar
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-min">
+            {/* Pedidos - compacto */}
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Package className="h-4 w-4 text-success" />
+                  Pedidos
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                <div className="space-y-2">
+                  <Label htmlFor="directAssignmentTimeout" className="text-xs">Asignación directa (min)</Label>
+                  <NumberInput
+                    id="directAssignmentTimeout"
+                    min={1}
+                    value={settings.orders.directAssignmentTimeout}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, orders: { ...prev.orders, directAssignmentTimeout: v || 1 } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="broadcastTimeout" className="text-xs">Broadcast (min)</Label>
+                  <NumberInput
+                    id="broadcastTimeout"
+                    min={1}
+                    value={settings.orders.broadcastTimeout}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, orders: { ...prev.orders, broadcastTimeout: v || 1 } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="orderExpiryMinutes" className="text-xs">Expiración (min)</Label>
+                  <NumberInput
+                    id="orderExpiryMinutes"
+                    min={5}
+                    value={settings.orders.orderExpiryMinutes}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, orders: { ...prev.orders, orderExpiryMinutes: v || 5 } } : prev
+                      )
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card className="border-border/60">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <MessageCircle className="h-4 w-4 text-primary" />
-                    WhatsApp
-                  </CardTitle>
-                  <CardDescription>Integración con WhatsApp Business API</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="whatsappEnabled">Notificaciones por WhatsApp</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Enviar notificaciones automáticas por WhatsApp
-                      </p>
-                    </div>
-                    <Switch
-                      id="whatsappEnabled"
-                      checked={settings.whatsapp.enabled}
-                      onCheckedChange={(checked) =>
-                        setSettings((prev) =>
-                          prev ? { ...prev, whatsapp: { ...prev.whatsapp, enabled: checked } } : prev
-                        )
-                      }
-                    />
+            {/* Tarifas - compacto */}
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-warning" />
+                  Tarifas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                <div className="space-y-2">
+                  <Label htmlFor="baseFee" className="text-xs">Base ($)</Label>
+                  <NumberInput
+                    id="baseFee"
+                    min={0}
+                    value={settings.delivery?.baseFee ?? 5000}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, delivery: { ...prev.delivery, baseFee: v || 0 } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pricePerKm" className="text-xs">Por km ($)</Label>
+                  <NumberInput
+                    id="pricePerKm"
+                    min={0}
+                    value={settings.delivery?.pricePerKm ?? 1500}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, delivery: { ...prev.delivery, pricePerKm: v || 0 } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <div className="rounded-md bg-muted p-2">
+                  <p className="text-[11px] text-muted-foreground">
+                    <strong>Fórmula:</strong> Base + (km × Precio/km)
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Check-in - ultra compacto */}
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <MessageCircle className="h-4 w-4 text-blue-500" />
+                  Check-in
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  <Label htmlFor="checkInInterval" className="text-xs">Intervalo (min)</Label>
+                  <NumberInput
+                    id="checkInInterval"
+                    min={5}
+                    max={1440}
+                    value={settings.whatsapp.checkInIntervalMinutes}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, whatsapp: { ...prev.whatsapp, checkInIntervalMinutes: v || 30 } } : prev
+                      )
+                    }
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Mensajes de confirmación a domiciliarios
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* WhatsApp - más ancho */}
+            <Card className="border-border/60 md:col-span-2 lg:col-span-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <MessageCircle className="h-4 w-4 text-primary" />
+                  WhatsApp Business
+                </CardTitle>
+                <CardDescription className="text-xs">Integración con WhatsApp Business API</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="whatsappEnabled" className="text-sm">Notificaciones</Label>
+                    <p className="text-[11px] text-muted-foreground">Enviar notificaciones automáticas</p>
                   </div>
-                  <Separator />
+                  <Switch
+                    id="whatsappEnabled"
+                    checked={settings.whatsapp.enabled}
+                    onCheckedChange={(checked) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, whatsapp: { ...prev.whatsapp, enabled: checked } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <Separator />
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="phoneNumberId">Phone Number ID</Label>
+                    <Label htmlFor="phoneNumberId" className="text-xs">Phone Number ID</Label>
                     <Input
                       id="phoneNumberId"
                       value={settings.whatsapp.phoneNumberId}
@@ -256,19 +314,12 @@ export default function AdminSettingsPage() {
                           prev ? { ...prev, whatsapp: { ...prev.whatsapp, phoneNumberId: e.target.value } } : prev
                         )
                       }
-                      placeholder="ID del número de WhatsApp Business"
+                      placeholder="ID del número"
+                      className="h-8 text-sm"
                     />
-                  <div className="flex items-start gap-1.5 rounded-md bg-muted p-2.5">
-                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">
-                      El token de acceso se configura en esta sección.
-                      Se almacena de forma segura en la base de datos.
-                    </p>
                   </div>
-                  </div>
-                  <Separator />
                   <div className="space-y-2">
-                    <Label htmlFor="whatsappAccessToken">Access Token</Label>
+                    <Label htmlFor="whatsappAccessToken" className="text-xs">Access Token</Label>
                     <Input
                       id="whatsappAccessToken"
                       type="password"
@@ -280,227 +331,150 @@ export default function AdminSettingsPage() {
                         )
                       }
                       placeholder="EAAxxxxxx"
+                      className="h-8 text-sm"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Token de acceso de la API de WhatsApp Business
-                    </p>
                   </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <Label htmlFor="businessPhone">Número de WhatsApp Business</Label>
-                    <Input
-                      id="businessPhone"
-                      value={settings.whatsapp.businessPhone}
-                      disabled={!settings.whatsapp.enabled}
-                      onChange={(e) =>
-                        setSettings((prev) =>
-                          prev ? { ...prev, whatsapp: { ...prev.whatsapp, businessPhone: e.target.value } } : prev
-                        )
-                      }
-                      placeholder="5730012345678"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Número en formato internacional sin + (ej: 5730012345678). Se usa para generar links de activación.
-                    </p>
-                  </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <Label htmlFor="checkInInterval">Intervalo de check-in (min)</Label>
-                    <NumberInput
-                      id="checkInInterval"
-                      min={5}
-                      max={120}
-                      value={settings.whatsapp.checkInIntervalMinutes}
-                      onValueChange={(v) =>
-                        setSettings((prev) =>
-                          prev ? { ...prev, whatsapp: { ...prev.whatsapp, checkInIntervalMinutes: v || 30 } } : prev
-                        )
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Minutos entre mensajes de confirmación a domiciliarios activos
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="businessPhone" className="text-xs">Número WhatsApp Business</Label>
+                  <Input
+                    id="businessPhone"
+                    value={settings.whatsapp.businessPhone}
+                    disabled={!settings.whatsapp.enabled}
+                    onChange={(e) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, whatsapp: { ...prev.whatsapp, businessPhone: e.target.value } } : prev
+                      )
+                    }
+                    placeholder="5730012345678 (sin +)"
+                    className="h-8 text-sm"
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Formato internacional sin +. Para generar links de activación.
+                  </p>
+                </div>
+                <div className="flex items-start gap-1.5 rounded-md bg-muted p-2">
+                  <Info className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
+                  <p className="text-[11px] text-muted-foreground">
+                    Las credenciales se almacenan de forma segura en la base de datos.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              <Card className="border-border/60">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <MapPin className="h-4 w-4 text-warning" />
-                    Tarifas de Domicilio
-                  </CardTitle>
-                  <CardDescription>Configuración de costos por distancia</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="baseFee">Tarifa Base ($)</Label>
-                      <NumberInput
-                        id="baseFee"
-                        min={0}
-                        value={settings.delivery?.baseFee ?? 5000}
-                        onValueChange={(v) =>
-                          setSettings((prev) =>
-                            prev ? { ...prev, delivery: { ...prev.delivery, baseFee: v || 0 } } : prev
-                          )
-                        }
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Costo fijo por cada domicilio
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="pricePerKm">Precio por Km ($)</Label>
-                      <NumberInput
-                        id="pricePerKm"
-                        min={0}
-                        value={settings.delivery?.pricePerKm ?? 1500}
-                        onValueChange={(v) =>
-                          setSettings((prev) =>
-                            prev ? { ...prev, delivery: { ...prev.delivery, pricePerKm: v || 0 } } : prev
-                          )
-                        }
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Costo adicional por kilómetro
-                      </p>
-                    </div>
-                  </div>
-                  <div className="rounded-md bg-muted p-3">
-                    <p className="text-xs text-muted-foreground">
-                      <strong>Fórmula:</strong> Tarifa = Base + (Distancia km × Precio/km)
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border/60">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <CreditCard className="h-4 w-4 text-primary" />
-                    Pasarela de Pagos
-                  </CardTitle>
-                  <CardDescription>Configuración de MercadoPago para cobros</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="mpEnabled">Habilitar MercadoPago</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Aceptar pagos con MercadoPago
-                      </p>
-                    </div>
-                    <Switch
-                      id="mpEnabled"
-                      checked={settings.payments?.mercadopago?.enabled ?? false}
-                      onCheckedChange={(checked) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                payments: {
-                                  ...prev.payments,
-                                  mercadopago: { ...prev.payments?.mercadopago, enabled: checked },
-                                },
-                              }
-                            : prev
-                        )
-                      }
-                    />
-                  </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <Label htmlFor="mpAccessToken">Access Token</Label>
-                    <Input
-                      id="mpAccessToken"
-                      type="password"
-                      value={settings.payments?.mercadopago?.accessToken ?? ""}
-                      disabled={!settings.payments?.mercadopago?.enabled}
-                      onChange={(e) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
+            {/* Pagos */}
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                  MercadoPago
+                </CardTitle>
+                <CardDescription className="text-xs">Pasarela de pagos</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="mpEnabled" className="text-sm">Habilitar</Label>
+                  <Switch
+                    id="mpEnabled"
+                    checked={settings.payments?.mercadopago?.enabled ?? false}
+                    onCheckedChange={(checked) =>
+                      setSettings((prev) =>
+                        prev
+                          ? {
                               ...prev,
                               payments: {
                                 ...prev.payments,
-                                mercadopago: { ...prev.payments?.mercadopago, accessToken: e.target.value },
+                                mercadopago: { ...prev.payments?.mercadopago, enabled: checked },
                               },
                             }
-                            : prev
-                        )
-                      }
-                      placeholder="APP_USR-..."
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Token de acceso de producción de MercadoPago
-                    </p>
-                  </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <Label htmlFor="mpPublicKey">Public Key</Label>
-                    <Input
-                      id="mpPublicKey"
-                      value={settings.payments?.mercadopago?.publicKey ?? ""}
-                      disabled={!settings.payments?.mercadopago?.enabled}
-                      onChange={(e) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                              ...prev,
-                              payments: {
-                                ...prev.payments,
-                                mercadopago: { ...prev.payments?.mercadopago, publicKey: e.target.value },
-                              },
-                            }
-                            : prev
-                        )
-                      }
-                      placeholder="APP_USR-..."
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Llave pública para el checkout del comercio
-                    </p>
-                  </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <Label htmlFor="mpWebhookSecret">Webhook Secret</Label>
-                    <Input
-                      id="mpWebhookSecret"
-                      type="password"
-                      value={settings.payments?.mercadopago?.webhookSecret ?? ""}
-                      disabled={!settings.payments?.mercadopago?.enabled}
-                      onChange={(e) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                              ...prev,
-                              payments: {
-                                ...prev.payments,
-                                mercadopago: { ...prev.payments?.mercadopago, webhookSecret: e.target.value },
-                              },
-                            }
-                            : prev
-                        )
-                      }
-                      placeholder="Tu webhook secret"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Secreto para validar notificaciones de pago
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-1.5 rounded-md bg-muted p-2.5">
-                    <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">
-                      Las credenciales se almacenan de forma segura en la base de datos.
-                      Nunca serán visibles para los usuarios finales.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                          : prev
+                      )
+                    }
+                  />
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <Label htmlFor="mpAccessToken" className="text-xs">Access Token</Label>
+                  <Input
+                    id="mpAccessToken"
+                    type="password"
+                    value={settings.payments?.mercadopago?.accessToken ?? ""}
+                    disabled={!settings.payments?.mercadopago?.enabled}
+                    onChange={(e) =>
+                      setSettings((prev) =>
+                        prev
+                          ? {
+                            ...prev,
+                            payments: {
+                              ...prev.payments,
+                              mercadopago: { ...prev.payments?.mercadopago, accessToken: e.target.value },
+                            },
+                          }
+                          : prev
+                      )
+                    }
+                    placeholder="APP_USR-..."
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="mpPublicKey" className="text-xs">Public Key</Label>
+                  <Input
+                    id="mpPublicKey"
+                    value={settings.payments?.mercadopago?.publicKey ?? ""}
+                    disabled={!settings.payments?.mercadopago?.enabled}
+                    onChange={(e) =>
+                      setSettings((prev) =>
+                        prev
+                          ? {
+                            ...prev,
+                            payments: {
+                              ...prev.payments,
+                              mercadopago: { ...prev.payments?.mercadopago, publicKey: e.target.value },
+                            },
+                          }
+                          : prev
+                      )
+                    }
+                    placeholder="APP_USR-..."
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="mpWebhookSecret" className="text-xs">Webhook Secret</Label>
+                  <Input
+                    id="mpWebhookSecret"
+                    type="password"
+                    value={settings.payments?.mercadopago?.webhookSecret ?? ""}
+                    disabled={!settings.payments?.mercadopago?.enabled}
+                    onChange={(e) =>
+                      setSettings((prev) =>
+                        prev
+                          ? {
+                            ...prev,
+                            payments: {
+                              ...prev.payments,
+                              mercadopago: { ...prev.payments?.mercadopago, webhookSecret: e.target.value },
+                            },
+                          }
+                          : prev
+                      )
+                    }
+                    placeholder="Tu webhook secret"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="flex items-start gap-1.5 rounded-md bg-muted p-2">
+                  <Lock className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
+                  <p className="text-[11px] text-muted-foreground">
+                    Credenciales seguras. Nunca visibles para usuarios.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
+            {/* Créditos - ocupa 2 columnas */}
+            <div className="md:col-span-2 lg:col-span-1">
               <CreditsSection
                 creditValue={settings.credits.creditValue}
                 lowCreditsThreshold={settings.credits.lowCreditsThreshold}
@@ -523,7 +497,10 @@ export default function AdminSettingsPage() {
               />
             </div>
 
-            <AdminsSection />
+            {/* Admins - full width */}
+            <div className="md:col-span-2 lg:col-span-3">
+              <AdminsSection />
+            </div>
           </div>
         ) : null}
       </div>
