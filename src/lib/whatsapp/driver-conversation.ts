@@ -23,20 +23,16 @@ function normalizePhone(phone: string): string {
 
 async function findDriverByPhone(phone: string) {
   const normalized = normalizePhone(phone)
+  const last10 = normalized.slice(-10)
   
-  const driver = await prisma.driver.findFirst({
-    where: {
-      OR: [
-        { phone: normalized },
-        { phone: `+${normalized}` },
-        { phone: normalized.replace(/^57/, "+57") },
-        { phone: `+${normalized.replace(/^57/, "")}` },
-      ],
-    },
+  const drivers = await prisma.driver.findMany({
     include: { user: true },
   })
   
-  return driver
+  return drivers.find(d => {
+    const dn = normalizePhone(d.phone)
+    return dn === normalized || dn.endsWith(last10) || normalized.endsWith(dn.replace(/^\+/, ""))
+  }) || null
 }
 
 export async function handleDriverMessage(phone: string, message: string) {
