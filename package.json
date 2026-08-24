@@ -7,7 +7,10 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test:whatsapp": "./test-whatsapp.sh",
+    "test:whatsapp:phone": "./test-whatsapp.sh $npm_config_phone",
+    "test:whatsapp:full": "./test-whatsapp.sh $npm_config_phone \"$npm_config_message\""
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

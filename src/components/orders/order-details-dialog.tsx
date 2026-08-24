@@ -25,6 +25,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: any }> 
   PICKED_UP: { label: "Recogido", color: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Bike },
   IN_TRANSIT: { label: "En tránsito", color: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Bike },
   DELIVERED: { label: "Entregado", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle2 },
+  FAILED_DELIVERY: { label: "No entregado", color: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: AlertCircle },
   CANCELLED: { label: "Cancelado", color: "bg-rose-500/10 text-rose-600 border-rose-500/20", icon: XCircle },
   EXPIRED: { label: "Expirado", color: "bg-slate-500/10 text-slate-600 border-slate-500/20", icon: AlertCircle },
 }

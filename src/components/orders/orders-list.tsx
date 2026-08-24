@@ -45,6 +45,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "warnin
   PICKED_UP: { label: "Recogido", variant: "default" },
   IN_TRANSIT: { label: "En Entrega", variant: "default" },
   DELIVERED: { label: "Entregado", variant: "success" },
+  FAILED_DELIVERY: { label: "No entregado", variant: "warning" },
   CANCELLED: { label: "Cancelado", variant: "destructive" },
   EXPIRED: { label: "Expirado", variant: "outline" },
 }
