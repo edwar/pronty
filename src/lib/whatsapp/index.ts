@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 
-const WHATSAPP_API_URL = "https://graph.facebook.com/v18.0"
+const WHATSAPP_API_URL = "https://graph.facebook.com/v25.0"
 
 function formatPhoneForWhatsApp(phone: string): string {
   // Remove spaces, dashes, parentheses, and leading +
@@ -39,7 +39,7 @@ interface SendWhatsAppMessageProps {
 
 export async function sendWhatsAppMessage({ to, message }: SendWhatsAppMessageProps) {
   const { phoneNumberId, accessToken, enabled } = await getWhatsAppConfig()
-  
+
   if (!enabled || !phoneNumberId || !accessToken) {
     console.error("WhatsApp credentials not configured")
     return { success: false, error: "WhatsApp not configured" }
@@ -87,7 +87,7 @@ export async function sendWhatsAppButtonMessage(
   buttons: { id: string; title: string }[]
 ) {
   const { phoneNumberId, accessToken, enabled } = await getWhatsAppConfig()
-  
+
   if (!enabled || !phoneNumberId || !accessToken) {
     console.error("WhatsApp credentials not configured")
     return { success: false, error: "WhatsApp not configured" }
