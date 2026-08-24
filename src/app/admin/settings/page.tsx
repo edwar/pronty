@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Package, MessageCircle, Save, Info, Loader2, CreditCard, Lock } from "lucide-react"
+import { Package, MessageCircle, Save, Info, Loader2, CreditCard, Lock, MapPin } from "lucide-react"
 import { Loading } from "@/components/ui/loading"
 import { NumberInput } from "@/components/ui/number-input"
 import { CreditsSection } from "@/components/admin/credits-section"
@@ -35,6 +35,10 @@ interface GlobalSettings {
     directAssignmentTimeout: number
     broadcastTimeout: number
     orderExpiryMinutes: number
+  }
+  delivery: {
+    baseFee: number
+    pricePerKm: number
   }
   whatsapp: {
     enabled: boolean
@@ -322,6 +326,57 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="border-border/60">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <MapPin className="h-4 w-4 text-warning" />
+                    Tarifas de Domicilio
+                  </CardTitle>
+                  <CardDescription>Configuración de costos por distancia</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="baseFee">Tarifa Base ($)</Label>
+                      <NumberInput
+                        id="baseFee"
+                        min={0}
+                        value={settings.delivery?.baseFee ?? 5000}
+                        onValueChange={(v) =>
+                          setSettings((prev) =>
+                            prev ? { ...prev, delivery: { ...prev.delivery, baseFee: v || 0 } } : prev
+                          )
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Costo fijo por cada domicilio
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pricePerKm">Precio por Km ($)</Label>
+                      <NumberInput
+                        id="pricePerKm"
+                        min={0}
+                        value={settings.delivery?.pricePerKm ?? 1500}
+                        onValueChange={(v) =>
+                          setSettings((prev) =>
+                            prev ? { ...prev, delivery: { ...prev.delivery, pricePerKm: v || 0 } } : prev
+                          )
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Costo adicional por kilómetro
+                      </p>
+                    </div>
+                  </div>
+                  <div className="rounded-md bg-muted p-3">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Fórmula:</strong> Tarifa = Base + (Distancia km × Precio/km)
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="border-border/60">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">

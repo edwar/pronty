@@ -38,7 +38,7 @@ interface Driver {
   fullName: string
   vehicleType: string
   licensePlate: string | null
-  zone: string | null
+  city: string | null
   isAvailable: boolean
   isActive: boolean
   isApproved: boolean
@@ -154,7 +154,7 @@ export default function AdminDriversPage() {
                       <TableCell className="font-medium">{driver.fullName}</TableCell>
                       <TableCell>{driver.phone}</TableCell>
                       <TableCell>{driver.vehicleType}</TableCell>
-                      <TableCell>{driver.zone || "-"}</TableCell>
+                      <TableCell>{driver.city || "-"}</TableCell>
                       <TableCell>{new Date(driver.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -209,7 +209,7 @@ export default function AdminDriversPage() {
                       <TableCell className="font-medium">{driver.fullName}</TableCell>
                       <TableCell>{driver.phone}</TableCell>
                       <TableCell>{driver.vehicleType}</TableCell>
-                      <TableCell>{driver.zone || "-"}</TableCell>
+                      <TableCell>{driver.city || "-"}</TableCell>
                       <TableCell>
                         <Badge variant={driver.isActive ? "default" : "secondary"}>
                           {driver.isActive ? "Activo" : "Inactivo"}

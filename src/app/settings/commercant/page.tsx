@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Shield,
   Building2,
@@ -62,8 +63,9 @@ interface NotificationSettings {
 interface BusinessSettings {
   orderPrefix: string
   workingHours: Record<string, { open: string; close: string; active: boolean }>
-  deliveryZones: string[]
-  maxDeliveryDistance: number
+  city: string
+  lat: number | null
+  lng: number | null
 }
 
 const daysOfWeek = [
@@ -76,7 +78,12 @@ const daysOfWeek = [
   { key: "sunday", label: "Domingo" },
 ]
 
-const availableZones = ["centro", "norte", "sur", "este", "oeste"]
+const colombianCities = [
+  "Bogotá", "Medellín", "Cali", "Barranquilla", "Bucaramanga",
+  "Cartagena", "Cúcuta", "Ibagué", "Pereira", "Santa Marta",
+  "Villavicencio", "Manizales", "Neiva", "Pasto", "Armenia",
+  "Popayán", "Montería", "Sincelejo", "Valledupar", "Tulúa",
+]
 
 export default function CommercantSettingsPage() {
   const { isAdmin, isLoading: userLoading } = useUser()
@@ -93,8 +100,9 @@ export default function CommercantSettingsPage() {
   const [business, setBusiness] = useState<BusinessSettings>({
     orderPrefix: "ORD",
     workingHours: {},
-    deliveryZones: [],
-    maxDeliveryDistance: 5,
+    city: "",
+    lat: null,
+    lng: null,
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -122,19 +130,24 @@ export default function CommercantSettingsPage() {
 
   const fetchAllSettings = async () => {
     try {
-      const [settingsRes, notificationsRes, businessRes] = await Promise.all([
+      const [settingsRes, notificationsRes] = await Promise.all([
         fetch("/api/settings"),
         fetch("/api/settings/notifications"),
-        fetch("/api/settings/business"),
       ])
-      const [settingsData, notificationsData, businessData] = await Promise.all([
+      const [settingsData, notificationsData] = await Promise.all([
         settingsRes.json(),
         notificationsRes.json(),
-        businessRes.json(),
       ])
       setSettings(settingsData)
       setNotifications(notificationsData)
-      setBusiness(businessData)
+      if (settingsData?.commerce) {
+        setBusiness(prev => ({
+          ...prev,
+          city: settingsData.commerce.city || "",
+          lat: settingsData.commerce.lat ? parseFloat(settingsData.commerce.lat) : null,
+          lng: settingsData.commerce.lng ? parseFloat(settingsData.commerce.lng) : null,
+        }))
+      }
     } catch (error) {
       console.error("Error fetching settings:", error)
     } finally {
@@ -166,10 +179,18 @@ export default function CommercantSettingsPage() {
     setError(null)
     setSuccess(null)
     try {
-      const response = await fetch("/api/settings/business", {
+      const response = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(business),
+        body: JSON.stringify({
+          commerceName: settings?.commerce?.name,
+          commercePhone: settings?.commerce?.phone,
+          commerceAddress: settings?.commerce?.address,
+          commerceWhatsapp: settings?.commerce?.whatsapp,
+          commerceCity: business.city,
+          commerceLat: business.lat,
+          commerceLng: business.lng,
+        }),
       })
       if (!response.ok) throw new Error("Error al guardar")
       setSuccess("Configuración del negocio guardada")
@@ -275,15 +296,6 @@ export default function CommercantSettingsPage() {
     setBusiness(prev => ({
       ...prev,
       workingHours: { ...prev.workingHours, [day]: { ...prev.workingHours[day], [field]: value } },
-    }))
-  }
-
-  const toggleZone = (zone: string) => {
-    setBusiness(prev => ({
-      ...prev,
-      deliveryZones: prev.deliveryZones.includes(zone)
-        ? prev.deliveryZones.filter(z => z !== zone)
-        : [...prev.deliveryZones, zone],
     }))
   }
 
@@ -450,23 +462,70 @@ export default function CommercantSettingsPage() {
                 </p>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Zonas de cobertura</Label>
-                <div className="flex flex-wrap gap-2">
-                  {availableZones.map(zone => (
-                    <Badge
-                      key={zone}
-                      variant={business.deliveryZones.includes(zone) ? "default" : "outline"}
-                      className="cursor-pointer transition-all hover:scale-105"
-                      onClick={() => toggleZone(zone)}
-                    >
-                      {zone.charAt(0).toUpperCase() + zone.slice(1)}
-                    </Badge>
-                  ))}
-                </div>
+                <Label htmlFor="city" className="text-sm font-medium">
+                  Ciudad *
+                </Label>
+                <Select
+                  value={business.city}
+                  onValueChange={(value) => setBusiness(prev => ({ ...prev, city: value || "" }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar ciudad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {colombianCities.map(city => (
+                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground">
-                  {business.deliveryZones.length} zona{business.deliveryZones.length !== 1 ? "s" : ""} seleccionada{business.deliveryZones.length !== 1 ? "s" : ""}
+                  Ciudad donde opera tu negocio
                 </p>
               </div>
+            </div>
+
+            <Separator />
+
+            <div>
+              <h4 className="text-sm font-medium mb-4">Ubicación del negocio</h4>
+              <p className="text-xs text-muted-foreground mb-4">
+                Coordenadas geográficas de tu dirección. Se usarán para calcular distancias y tarifas.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="lat" className="text-sm font-medium">
+                    Latitud
+                  </Label>
+                  <Input
+                    id="lat"
+                    type="number"
+                    step="any"
+                    value={business.lat ?? ""}
+                    onChange={(e) =>
+                      setBusiness(prev => ({ ...prev, lat: e.target.value ? parseFloat(e.target.value) : null }))
+                    }
+                    placeholder="4.7110"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lng" className="text-sm font-medium">
+                    Longitud
+                  </Label>
+                  <Input
+                    id="lng"
+                    type="number"
+                    step="any"
+                    value={business.lng ?? ""}
+                    onChange={(e) =>
+                      setBusiness(prev => ({ ...prev, lng: e.target.value ? parseFloat(e.target.value) : null }))
+                    }
+                    placeholder="-74.0721"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Ejemplo Bogotá: 4.7110, -74.0721
+              </p>
             </div>
 
             <Separator />

@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { NumberInput } from "@/components/ui/number-input"
-import { Loader2, AlertCircle } from "lucide-react"
+import { Loader2, AlertCircle, MapPin, Calculator } from "lucide-react"
+import { haversineDistance, calculateDeliveryFee, formatDistance } from "@/lib/distance"
 
 interface CreateOrderDialogProps {
   open: boolean
@@ -23,6 +24,17 @@ interface Driver {
   id: string
   fullName: string
   vehicleType: string
+}
+
+interface CommerceData {
+  lat: number | null
+  lng: number | null
+  address: string | null
+}
+
+interface DeliveryPricing {
+  baseFee: number
+  pricePerKm: number
 }
 
 export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: CreateOrderDialogProps) {
@@ -38,6 +50,12 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   const [deliveryNotes, setDeliveryNotes] = useState("")
   const [packageDescription, setPackageDescription] = useState("")
   const [fee, setFee] = useState(5000)
+  
+  const [commerce, setCommerce] = useState<CommerceData | null>(null)
+  const [pricing, setPricing] = useState<DeliveryPricing>({ baseFee: 5000, pricePerKm: 1500 })
+  const [distance, setDistance] = useState<number | null>(null)
+  const [deliveryLat, setDeliveryLat] = useState<number | null>(null)
+  const [deliveryLng, setDeliveryLng] = useState<number | null>(null)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -45,7 +63,12 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   useEffect(() => {
     if (open) {
       fetchDrivers()
+      fetchCommerceData()
+      fetchPricing()
       setError(null)
+      setDistance(null)
+      setDeliveryLat(null)
+      setDeliveryLng(null)
     }
   }, [open])
 
@@ -59,6 +82,63 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
     } catch {
       // ignore
     }
+  }
+
+  const fetchCommerceData = async () => {
+    try {
+      const res = await fetch("/api/settings")
+      if (res.ok) {
+        const data = await res.json()
+        if (data.commerce) {
+          setCommerce({
+            lat: data.commerce.lat ? parseFloat(data.commerce.lat) : null,
+            lng: data.commerce.lng ? parseFloat(data.commerce.lng) : null,
+            address: data.commerce.address,
+          })
+          if (data.commerce.address) {
+            setPickupAddress(data.commerce.address)
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const fetchPricing = async () => {
+    try {
+      const res = await fetch("/api/admin/settings")
+      if (res.ok) {
+        const data = await res.json()
+        if (data.delivery) {
+          setPricing({
+            baseFee: data.delivery.baseFee || 5000,
+            pricePerKm: data.delivery.pricePerKm || 1500,
+          })
+          setFee(data.delivery.baseFee || 5000)
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const calculateDistanceAndFee = (lat: number, lng: number) => {
+    if (!commerce?.lat || !commerce?.lng) {
+      setDistance(null)
+      return
+    }
+
+    const dist = haversineDistance(commerce.lat, commerce.lng, lat, lng)
+    setDistance(dist)
+    const newFee = calculateDeliveryFee(dist, pricing.baseFee, pricing.pricePerKm)
+    setFee(newFee)
+  }
+
+  const handleDeliveryLocationChange = (lat: number, lng: number) => {
+    setDeliveryLat(lat)
+    setDeliveryLng(lng)
+    calculateDistanceAndFee(lat, lng)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,10 +171,15 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
           recipientPhone,
           pickupAddress,
           pickupNotes,
+          pickupLat: commerce?.lat,
+          pickupLng: commerce?.lng,
           deliveryAddress,
           deliveryNotes,
+          deliveryLat,
+          deliveryLng,
           packageDescription,
           totalFee: fee,
+          distanceKm: distance,
           assignmentType,
           driverId: assignmentType === "DIRECT" ? driverId : null,
         }),
@@ -114,13 +199,16 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
       setDeliveryAddress("")
       setDeliveryNotes("")
       setPackageDescription("")
-      setFee(5000)
+      setFee(pricing.baseFee)
       setDriverId("")
+      setDistance(null)
+      setDeliveryLat(null)
+      setDeliveryLng(null)
 
       onOpenChange(false)
       if (onOrderCreated) onOrderCreated()
-    } catch (err: any) {
-      setError(err.message || "Error al procesar la creación del pedido")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error al procesar la creación del pedido")
     } finally {
       setLoading(false)
     }
@@ -213,6 +301,42 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
                 onChange={(e) => setDeliveryNotes(e.target.value)}
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="deliveryLat">Latitud destino</Label>
+                <Input
+                  id="deliveryLat"
+                  type="number"
+                  step="any"
+                  placeholder="4.7110"
+                  value={deliveryLat ?? ""}
+                  onChange={(e) => {
+                    const lat = e.target.value ? parseFloat(e.target.value) : null
+                    setDeliveryLat(lat)
+                    if (lat && deliveryLng) {
+                      handleDeliveryLocationChange(lat, deliveryLng)
+                    }
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="deliveryLng">Longitud destino</Label>
+                <Input
+                  id="deliveryLng"
+                  type="number"
+                  step="any"
+                  placeholder="-74.0721"
+                  value={deliveryLng ?? ""}
+                  onChange={(e) => {
+                    const lng = e.target.value ? parseFloat(e.target.value) : null
+                    setDeliveryLng(lng)
+                    if (deliveryLat && lng) {
+                      handleDeliveryLocationChange(deliveryLat, lng)
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -237,6 +361,23 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
                 />
               </div>
             </div>
+            {distance !== null && (
+              <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
+                <Calculator className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  Distancia: <span className="font-medium text-foreground">{formatDistance(distance)}</span>
+                  {" "}— Tarifa calculada: <span className="font-medium text-foreground">${fee.toLocaleString("es-CO")}</span>
+                </span>
+              </div>
+            )}
+            {!commerce?.lat && !commerce?.lng && (
+              <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  Configura las coordenadas de tu negocio en Configuración para calcular distancias automáticamente.
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">

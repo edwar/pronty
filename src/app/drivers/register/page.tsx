@@ -20,8 +20,15 @@ export default function DriverRegisterPage() {
     email: "",
     vehicleType: "",
     licensePlate: "",
-    zone: "",
+    city: "",
   })
+
+  const colombianCities = [
+    "Bogotá", "Medellín", "Cali", "Barranquilla", "Bucaramanga",
+    "Cartagena", "Cúcuta", "Ibagué", "Pereira", "Santa Marta",
+    "Villavicencio", "Manizales", "Neiva", "Pasto", "Armenia",
+    "Popayán", "Montería", "Sincelejo", "Valledupar", "Tulúa",
+  ]
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }))
@@ -163,22 +170,20 @@ export default function DriverRegisterPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="zone">Zona de Cobertura</Label>
+                  <Label htmlFor="city">Ciudad *</Label>
                   <Select 
                     required
-                    value={formData.zone}
-                    onValueChange={(value) => handleSelectChange("zone", value)}
+                    value={formData.city}
+                    onValueChange={(value) => handleSelectChange("city", value)}
                   >
-                    <SelectTrigger><SelectValue placeholder="Seleccionar zona" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Seleccionar ciudad" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="centro">Centro</SelectItem>
-                      <SelectItem value="norte">Norte</SelectItem>
-                      <SelectItem value="sur">Sur</SelectItem>
-                      <SelectItem value="este">Este</SelectItem>
-                      <SelectItem value="oeste">Oeste</SelectItem>
+                      {colombianCities.map(city => (
+                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">Selecciona la zona donde trabajarás</p>
+                  <p className="text-xs text-muted-foreground">Ciudad donde trabajarás</p>
                 </div>
               </div>
               <div className="space-y-2">

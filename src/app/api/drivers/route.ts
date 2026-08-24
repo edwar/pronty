@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma"
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { fullName, phone, email, vehicleType, licensePlate, zone } = body
+    const { fullName, phone, email, vehicleType, licensePlate, city } = body
 
-    if (!fullName || !phone || !email || !vehicleType || !zone) {
+    if (!fullName || !phone || !email || !vehicleType || !city) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios" },
         { status: 400 }
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         fullName,
         vehicleType: vehicleType || "MOTORCYCLE",
         licensePlate: licensePlate || null,
-        zone: zone || null,
+        city: city || null,
         isAvailable: true,
         isActive: false,
         isApproved: false,

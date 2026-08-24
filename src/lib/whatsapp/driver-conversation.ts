@@ -284,9 +284,16 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
     })
 
     // Enviar ubicación de recogida con botón para confirmar
+    const pickupMapLink = order.pickupLat && order.pickupLng
+      ? `\n🗺️ *Ubicación:* https://www.google.com/maps?q=${order.pickupLat},${order.pickupLng}`
+      : ""
+    const deliveryMapLink = order.deliveryLat && order.deliveryLng
+      ? `\n🗺️ *Ubicación entrega:* https://www.google.com/maps?q=${order.deliveryLat},${order.deliveryLng}`
+      : ""
+
     await sendWhatsAppButtonMessage(
       phone,
-      `✅ Pedido #${order.orderNumber} aceptado\n\n📍 *Recogida:* ${order.pickupAddress}\n${order.pickupNotes ? `📝 Nota: ${order.pickupNotes}\n` : ""}\n🏠 *Entrega:* ${order.deliveryAddress}\n💰 *Tarifa:* $${Number(order.totalFee).toLocaleString("es-CO")}`,
+      `✅ Pedido #${order.orderNumber} aceptado\n\n📍 *Recogida:* ${order.pickupAddress}${pickupMapLink}\n${order.pickupNotes ? `📝 Nota: ${order.pickupNotes}\n` : ""}\n🏠 *Entrega:* ${order.deliveryAddress}${deliveryMapLink}\n💰 *Tarifa:* $${Number(order.totalFee).toLocaleString("es-CO")}${order.distanceKm ? `\n📏 *Distancia:* ${Number(order.distanceKm).toFixed(1)} km` : ""}`,
       [
         { id: `pickup_${orderId}`, title: "Confirmar Recogida" },
       ]

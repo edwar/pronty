@@ -103,6 +103,9 @@ model Commerce {
   phone       String?
   whatsapp    String?
   logoUrl     String?
+  city        String?
+  lat         Decimal? @db.Decimal(10, 8)
+  lng         Decimal? @db.Decimal(11, 8)
   isActive    Boolean  @default(true)
   credits     Int      @default(0)
   createdAt   DateTime @default(now())
@@ -118,6 +121,7 @@ model Commerce {
 
 
   @@index([isActive])
+  @@index([city])
   @@map("commerces")
 }
 
@@ -133,7 +137,7 @@ model Driver {
   fullName        String
   vehicleType     VehicleType  @default(MOTORCYCLE)
   licensePlate    String?
-  zone            String?
+  city            String?
   isAvailable     Boolean      @default(true)
   isActive        Boolean      @default(false)
   isApproved      Boolean      @default(false)
@@ -155,7 +159,7 @@ model Driver {
   ratings         Rating[]
 
   @@index([isAvailable, isActive, isApproved])
-  @@index([zone])
+  @@index([city])
   @@index([conversationStage])
   @@map("drivers")
 }
@@ -196,6 +200,7 @@ model Order {
   baseFee         Decimal     @db.Decimal(10, 2)
   commissionFee   Decimal?    @db.Decimal(10, 2)
   totalFee        Decimal     @db.Decimal(10, 2)
+  distanceKm      Decimal?    @db.Decimal(8, 2)
   
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -418,7 +423,7 @@ model DriverGroup {
   id            String   @id @default(uuid())
   name          String
   description   String?
-  zone          String?
+  city          String?
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

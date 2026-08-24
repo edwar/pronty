@@ -22,7 +22,7 @@ export async function GET(request: Request) {
         fullName: true,
         phone: true,
         vehicleType: true,
-        zone: true,
+        city: true,
       },
       orderBy: { fullName: "asc" },
     })

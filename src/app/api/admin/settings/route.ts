@@ -11,6 +11,10 @@ const defaultGlobalSettings = {
     broadcastTimeout: 3,
     orderExpiryMinutes: 30,
   },
+  delivery: {
+    baseFee: 5000,
+    pricePerKm: 1500,
+  },
   whatsapp: {
     enabled: false,
     phoneNumberId: "",

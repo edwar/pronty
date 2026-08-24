@@ -123,10 +123,15 @@ export async function POST(request: Request) {
       recipientPhone,
       pickupAddress,
       pickupNotes,
+      pickupLat,
+      pickupLng,
       deliveryAddress,
       deliveryNotes,
+      deliveryLat,
+      deliveryLng,
       packageDescription,
       totalFee,
+      distanceKm,
       assignmentType = "DIRECT",
       driverId,
     } = body
@@ -162,8 +167,12 @@ export async function POST(request: Request) {
           commerceId: commerce.id,
           driverId: driverId || null,
           pickupAddress,
+          pickupLat: pickupLat ? parseFloat(pickupLat) : null,
+          pickupLng: pickupLng ? parseFloat(pickupLng) : null,
           pickupNotes: pickupNotes || null,
           deliveryAddress,
+          deliveryLat: deliveryLat ? parseFloat(deliveryLat) : null,
+          deliveryLng: deliveryLng ? parseFloat(deliveryLng) : null,
           deliveryNotes: deliveryNotes || null,
           recipientName,
           recipientPhone,
@@ -172,6 +181,7 @@ export async function POST(request: Request) {
           assignmentType: assignmentType as any,
           baseFee: numericFee,
           totalFee: numericFee,
+          distanceKm: distanceKm ? parseFloat(distanceKm) : null,
           statusLogs: {
             create: {
               from: null,
@@ -215,9 +225,12 @@ export async function POST(request: Request) {
         where: { id: driverId },
       })
       if (driver?.phone) {
+        const deliveryMapLink = deliveryLat && deliveryLng
+          ? `\n🗺️ Ubicación: https://www.google.com/maps?q=${deliveryLat},${deliveryLng}`
+          : ""
         sendWhatsAppButtonMessage(
           driver.phone,
-          `¡Nuevo pedido #${orderNumber} de ${commerce.name}!\nEntrega en: ${deliveryAddress}\nTarifa: $${numericFee.toLocaleString("es-CO")}`,
+          `¡Nuevo pedido #${orderNumber} de ${commerce.name}!\n\n📍 Recogida: ${pickupAddress}\n🏠 Entrega: ${deliveryAddress}${deliveryMapLink}\n💰 Tarifa: $${numericFee.toLocaleString("es-CO")}${distanceKm ? `\n📏 Distancia: ${Number(distanceKm).toFixed(1)} km` : ""}`,
           [
             { id: `accept_${order.id}`, title: "Aceptar Pedido" },
             { id: `decline_${order.id}`, title: "Rechazar" },
