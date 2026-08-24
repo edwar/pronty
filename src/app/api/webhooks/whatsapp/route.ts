@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
     for (const entry of entries) {
       const changes = entry.changes || []
 
+      console.log("[WhatsApp Webhook] Changes:", JSON.stringify(changes, null, 2))
+
       for (const change of changes) {
         if (change.field !== "messages") continue
 
