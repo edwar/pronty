@@ -17,11 +17,30 @@ interface DriverConversation {
 
 const conversations = new Map<string, DriverConversation>()
 
-export async function handleDriverMessage(phone: string, message: string) {
-  const driver = await prisma.driver.findUnique({
-    where: { phone },
+function normalizePhone(phone: string): string {
+  return phone.replace(/[\s\-\(\)\+]/g, "")
+}
+
+async function findDriverByPhone(phone: string) {
+  const normalized = normalizePhone(phone)
+  
+  const driver = await prisma.driver.findFirst({
+    where: {
+      OR: [
+        { phone: normalized },
+        { phone: `+${normalized}` },
+        { phone: normalized.replace(/^57/, "+57") },
+        { phone: `+${normalized.replace(/^57/, "")}` },
+      ],
+    },
     include: { user: true },
   })
+  
+  return driver
+}
+
+export async function handleDriverMessage(phone: string, message: string) {
+  const driver = await findDriverByPhone(phone)
 
   if (!driver) {
     await sendWhatsAppMessage({
@@ -133,9 +152,7 @@ export async function handleDriverMessage(phone: string, message: string) {
 export async function handleDriverButtonResponse(phone: string, buttonId: string) {
   console.log(`[WhatsApp] Button response from ${phone}: ${buttonId}`)
 
-  const driver = await prisma.driver.findUnique({
-    where: { phone },
-  })
+  const driver = await findDriverByPhone(phone)
 
   if (!driver) {
     console.log(`[WhatsApp] Driver not found for phone: ${phone}`)
