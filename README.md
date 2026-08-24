@@ -239,3 +239,4 @@ Por convención del proyecto, **nunca** uses `Number(e.target.value) || 0` direc
 *   **Paleta de Colores:** Base limpia con neutros cálidos. Azul para acciones primarias, verde para éxitos, y ámbar para advertencias.
 *   **Tipografía:** DM Sans para textos limpios y legibles de interfaz, Geist Mono para datos numéricos y códigos de pedidos (`orderNumber`).
 *   **Anti-patrones:** Evitar gradientes ruidosos, sombras oscuras en reposo, bordes de 2px o más, y texto en mayúsculas sostenidas en exceso.
+
