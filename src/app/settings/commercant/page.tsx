@@ -31,6 +31,7 @@ import { useUser } from "@/hooks/use-user"
 import { parseNumericInput, cn } from "@/lib/utils"
 import { NumberInput } from "@/components/ui/number-input"
 import { TeamSection } from "@/components/settings/team-section"
+import { BranchesSection } from "@/components/commerce/branches-section"
 
 
 interface SettingsData {
@@ -655,6 +656,8 @@ export default function CommercantSettingsPage() {
         </div>
 
         <TeamSection />
+
+        <BranchesSection />
       </div>
     </DashboardLayout>
   )

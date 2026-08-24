@@ -121,6 +121,7 @@ export async function POST(request: Request) {
     const {
       recipientName,
       recipientPhone,
+      branchId,
       pickupAddress,
       pickupNotes,
       pickupLat,
@@ -165,6 +166,7 @@ export async function POST(request: Request) {
         data: {
           orderNumber,
           commerceId: commerce.id,
+          branchId: branchId || null,
           driverId: driverId || null,
           pickupAddress,
           pickupLat: pickupLat ? parseFloat(pickupLat) : null,

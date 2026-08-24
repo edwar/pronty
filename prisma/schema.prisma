@@ -113,6 +113,7 @@ model Commerce {
 
   user        User     @relation(fields: [userId], references: [id])
   employees   User[]   @relation("CommerceEmployees")
+  branches    Branch[]
   orders      Order[]
   transactions Transaction[]
   creditPackages CreditPackage[]
@@ -123,6 +124,31 @@ model Commerce {
   @@index([isActive])
   @@index([city])
   @@map("commerces")
+}
+
+// ============================================
+// SUCURSALES
+// ============================================
+
+model Branch {
+  id          String   @id @default(uuid())
+  commerceId  String
+  name        String
+  address     String
+  phone       String?
+  city        String?
+  lat         Decimal? @db.Decimal(10, 8)
+  lng         Decimal? @db.Decimal(11, 8)
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  commerce    Commerce @relation(fields: [commerceId], references: [id], onDelete: Cascade)
+  orders      Order[]
+
+  @@index([commerceId, isActive])
+  @@map("branches")
 }
 
 // ============================================
@@ -179,6 +205,7 @@ model Order {
   id              String      @id @default(uuid())
   orderNumber     String      @unique
   commerceId      String
+  branchId        String?
   driverId        String?
   
   pickupAddress   String
@@ -215,6 +242,7 @@ model Order {
   notes           String?
 
   commerce        Commerce    @relation(fields: [commerceId], references: [id])
+  branch          Branch?     @relation(fields: [branchId], references: [id])
   driver          Driver?     @relation(fields: [driverId], references: [id], map: "driver_id")
   statusLogs      OrderStatusLog[]
   whatsappLogs    WhatsAppLog[]
@@ -222,6 +250,7 @@ model Order {
   rating          Rating?
 
   @@index([commerceId, status])
+  @@index([branchId])
   @@index([driverId, status])
   @@index([status, createdAt])
   @@index([orderNumber])

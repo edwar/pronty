@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { NumberInput } from "@/components/ui/number-input"
-import { Loader2, AlertCircle, MapPin, Calculator } from "lucide-react"
+import { Loader2, AlertCircle, MapPin, Calculator, Store } from "lucide-react"
 import { haversineDistance, calculateDeliveryFee, formatDistance } from "@/lib/distance"
 
 interface CreateOrderDialogProps {
@@ -26,10 +26,15 @@ interface Driver {
   vehicleType: string
 }
 
-interface CommerceData {
+interface Branch {
+  id: string
+  name: string
+  address: string
+  phone: string | null
+  city: string | null
   lat: number | null
   lng: number | null
-  address: string | null
+  isDefault: boolean
 }
 
 interface DeliveryPricing {
@@ -41,6 +46,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   const [assignmentType, setAssignmentType] = useState<"DIRECT" | "BROADCAST">("DIRECT")
   const [driverId, setDriverId] = useState<string>("")
   const [drivers, setDrivers] = useState<Driver[]>([])
+  const [branches, setBranches] = useState<Branch[]>([])
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("")
   
   const [recipientName, setRecipientName] = useState("")
   const [recipientPhone, setRecipientPhone] = useState("")
@@ -51,7 +58,6 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   const [packageDescription, setPackageDescription] = useState("")
   const [fee, setFee] = useState(5000)
   
-  const [commerce, setCommerce] = useState<CommerceData | null>(null)
   const [pricing, setPricing] = useState<DeliveryPricing>({ baseFee: 5000, pricePerKm: 1500 })
   const [distance, setDistance] = useState<number | null>(null)
   const [deliveryLat, setDeliveryLat] = useState<number | null>(null)
@@ -63,9 +69,12 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   useEffect(() => {
     if (open) {
       fetchDrivers()
-      fetchCommerceData()
+      fetchBranches()
       fetchPricing()
       setError(null)
+      setSelectedBranchId("")
+      setPickupAddress("")
+      setPickupNotes("")
       setDistance(null)
       setDeliveryLat(null)
       setDeliveryLng(null)
@@ -84,20 +93,22 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
     }
   }
 
-  const fetchCommerceData = async () => {
+  const fetchBranches = async () => {
     try {
-      const res = await fetch("/api/settings")
+      const res = await fetch("/api/commerce/branches")
       if (res.ok) {
         const data = await res.json()
-        if (data.commerce) {
-          setCommerce({
-            lat: data.commerce.lat ? parseFloat(data.commerce.lat) : null,
-            lng: data.commerce.lng ? parseFloat(data.commerce.lng) : null,
-            address: data.commerce.address,
-          })
-          if (data.commerce.address) {
-            setPickupAddress(data.commerce.address)
-          }
+        const branchList = data.branches || []
+        setBranches(branchList)
+        
+        // Select default branch
+        const defaultBranch = branchList.find((b: Branch) => b.isDefault)
+        if (defaultBranch) {
+          setSelectedBranchId(defaultBranch.id)
+          setPickupAddress(defaultBranch.address)
+        } else if (branchList.length > 0) {
+          setSelectedBranchId(branchList[0].id)
+          setPickupAddress(branchList[0].address)
         }
       }
     } catch {
@@ -123,13 +134,27 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
     }
   }
 
-  const calculateDistanceAndFee = (lat: number, lng: number) => {
-    if (!commerce?.lat || !commerce?.lng) {
+  const handleBranchChange = (branchId: string) => {
+    setSelectedBranchId(branchId)
+    const branch = branches.find(b => b.id === branchId)
+    if (branch) {
+      setPickupAddress(branch.address)
+      calculateDistanceAndFee(branch.lat, branch.lng, deliveryLat, deliveryLng)
+    }
+  }
+
+  const calculateDistanceAndFee = (
+    branchLat: number | null | undefined,
+    branchLng: number | null | undefined,
+    destLat: number | null,
+    destLng: number | null
+  ) => {
+    if (!branchLat || !branchLng || !destLat || !destLng) {
       setDistance(null)
       return
     }
 
-    const dist = haversineDistance(commerce.lat, commerce.lng, lat, lng)
+    const dist = haversineDistance(branchLat, branchLng, destLat, destLng)
     setDistance(dist)
     const newFee = calculateDeliveryFee(dist, pricing.baseFee, pricing.pricePerKm)
     setFee(newFee)
@@ -138,7 +163,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   const handleDeliveryLocationChange = (lat: number, lng: number) => {
     setDeliveryLat(lat)
     setDeliveryLng(lng)
-    calculateDistanceAndFee(lat, lng)
+    const branch = branches.find(b => b.id === selectedBranchId)
+    calculateDistanceAndFee(branch?.lat ?? null, branch?.lng ?? null, lat, lng)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,6 +186,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
       return
     }
 
+    const selectedBranch = branches.find(b => b.id === selectedBranchId)
+
     setLoading(true)
 
     try {
@@ -169,10 +197,11 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
         body: JSON.stringify({
           recipientName,
           recipientPhone,
+          branchId: selectedBranchId || null,
           pickupAddress,
           pickupNotes,
-          pickupLat: commerce?.lat,
-          pickupLng: commerce?.lng,
+          pickupLat: selectedBranch?.lat,
+          pickupLng: selectedBranch?.lng,
           deliveryAddress,
           deliveryNotes,
           deliveryLat,
@@ -201,6 +230,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
       setPackageDescription("")
       setFee(pricing.baseFee)
       setDriverId("")
+      setSelectedBranchId("")
       setDistance(null)
       setDeliveryLat(null)
       setDeliveryLng(null)
@@ -231,6 +261,56 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
           )}
 
           <div className="space-y-4">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sucursal de Origen</h4>
+            {branches.length === 0 ? (
+              <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
+                <Store className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  No hay sucursales configuradas. Agrega una en{" "}
+                  <span className="font-medium text-foreground">Configuración → Sucursales</span>
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Sucursal *</Label>
+                <Select value={selectedBranchId} onValueChange={(v) => v && handleBranchChange(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar sucursal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branches.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        {branch.name} — {branch.address}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {selectedBranchId && (
+              <div className="space-y-2">
+                <Label htmlFor="pickupAddress">Dirección de Recogida *</Label>
+                <Input
+                  id="pickupAddress"
+                  placeholder="Dirección de la sucursal"
+                  value={pickupAddress}
+                  onChange={(e) => setPickupAddress(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="pickupNotes">Notas de Recogida</Label>
+              <Textarea
+                id="pickupNotes"
+                placeholder="Instrucciones para empacar o entregar..."
+                value={pickupNotes}
+                onChange={(e) => setPickupNotes(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Destinatario</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -254,29 +334,6 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
                   required
                 />
               </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recogida</h4>
-            <div className="space-y-2">
-              <Label htmlFor="pickupAddress">Dirección de Recogida *</Label>
-              <Input
-                id="pickupAddress"
-                placeholder="Calle 12 #45-67 (Tu restaurante)"
-                value={pickupAddress}
-                onChange={(e) => setPickupAddress(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="pickupNotes">Notas de Recogida</Label>
-              <Textarea
-                id="pickupNotes"
-                placeholder="Instrucciones para empacar o entregar..."
-                value={pickupNotes}
-                onChange={(e) => setPickupNotes(e.target.value)}
-              />
             </div>
           </div>
 
@@ -367,14 +424,6 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
                 <span className="text-muted-foreground">
                   Distancia: <span className="font-medium text-foreground">{formatDistance(distance)}</span>
                   {" "}— Tarifa calculada: <span className="font-medium text-foreground">${fee.toLocaleString("es-CO")}</span>
-                </span>
-              </div>
-            )}
-            {!commerce?.lat && !commerce?.lng && (
-              <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  Configura las coordenadas de tu negocio en Configuración para calcular distancias automáticamente.
                 </span>
               </div>
             )}
