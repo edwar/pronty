@@ -359,11 +359,15 @@ export default function HomePage() {
         <div className="container mx-auto flex flex-col items-center justify-between gap-6 md:flex-row">
           <Logo className="h-7 w-7" />
           <div className="flex gap-6">
-            {["Términos", "Privacidad", "Contacto"].map((item) => (
-              <Link key={item} href={`/${item.toLowerCase()}`} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                {item}
-              </Link>
-            ))}
+            <Link href="/terms" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              Términos
+            </Link>
+            <Link href="/privacy" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              Privacidad
+            </Link>
+            <Link href="/contacto" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              Contacto
+            </Link>
           </div>
           <div className="text-sm text-muted-foreground">
             © 2024 Pronty
