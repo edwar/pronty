@@ -473,8 +473,8 @@ export default function AdminSettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Créditos - ocupa 2 columnas */}
-            <div className="md:col-span-2 lg:col-span-1">
+            {/* Créditos - full width */}
+            <div className="md:col-span-2 lg:col-span-3">
               <CreditsSection
                 creditValue={settings.credits.creditValue}
                 lowCreditsThreshold={settings.credits.lowCreditsThreshold}
