@@ -184,12 +184,17 @@ export default function CommercantSettingsPage() {
     }
   }
 
-  if (userLoading || !isAdmin) {
+  if (userLoading) {
     return (
       <DashboardLayout>
         <Loading fullpage />
       </DashboardLayout>
     )
+  }
+
+  if (isAdmin) {
+    router.replace("/admin/settings")
+    return null
   }
 
   return (
