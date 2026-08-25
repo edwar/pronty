@@ -15,28 +15,28 @@ interface PhoneInputProps {
 }
 
 const countryCodes = [
-  { code: "+57", country: "CO", name: "Colombia", flag: "🇨🇴" },
-  { code: "+1", country: "US", name: "Estados Unidos", flag: "🇺🇸" },
-  { code: "+52", country: "MX", name: "México", flag: "🇲🇽" },
-  { code: "+54", country: "AR", name: "Argentina", flag: "🇦🇷" },
-  { code: "+56", country: "CL", name: "Chile", flag: "🇨🇱" },
-  { code: "+51", country: "PE", name: "Perú", flag: "🇵🇪" },
-  { code: "+593", country: "EC", name: "Ecuador", flag: "🇪🇨" },
-  { code: "+598", country: "UY", name: "Uruguay", flag: "🇺🇾" },
-  { code: "+595", country: "PY", name: "Paraguay", flag: "🇵🇾" },
-  { code: "+591", country: "BO", name: "Bolivia", flag: "🇧🇴" },
-  { code: "+58", country: "VE", name: "Venezuela", flag: "🇻🇪" },
-  { code: "+507", country: "PA", name: "Panamá", flag: "🇵🇦" },
-  { code: "+506", country: "CR", name: "Costa Rica", flag: "🇨🇷" },
-  { code: "+503", country: "SV", name: "El Salvador", flag: "🇸🇻" },
-  { code: "+504", country: "HN", name: "Honduras", flag: "🇭🇳" },
-  { code: "+505", country: "NI", name: "Nicaragua", flag: "🇳🇮" },
-  { code: "+502", country: "GT", name: "Guatemala", flag: "🇬🇹" },
-  { code: "+1809", country: "DO", name: "Rep. Dominicana", flag: "🇩🇴" },
-  { code: "+53", country: "CU", name: "Cuba", flag: "🇨🇺" },
-  { code: "+34", country: "ES", name: "España", flag: "🇪🇸" },
-  { code: "+55", country: "BR", name: "Brasil", flag: "🇧🇷" },
-  { code: "+44", country: "GB", name: "Reino Unido", flag: "🇬🇧" },
+  { code: "+57", country: "CO", name: "Colombia", abbr: "Col", flag: "🇨🇴" },
+  { code: "+1", country: "US", name: "Estados Unidos", abbr: "USA", flag: "🇺🇸" },
+  { code: "+52", country: "MX", name: "México", abbr: "Mex", flag: "🇲🇽" },
+  { code: "+54", country: "AR", name: "Argentina", abbr: "Arg", flag: "🇦🇷" },
+  { code: "+56", country: "CL", name: "Chile", abbr: "Chi", flag: "🇨🇱" },
+  { code: "+51", country: "PE", name: "Perú", abbr: "Per", flag: "🇵🇪" },
+  { code: "+593", country: "EC", name: "Ecuador", abbr: "Ecu", flag: "🇪🇨" },
+  { code: "+598", country: "UY", name: "Uruguay", abbr: "Uru", flag: "🇺🇾" },
+  { code: "+595", country: "PY", name: "Paraguay", abbr: "Par", flag: "🇵🇾" },
+  { code: "+591", country: "BO", name: "Bolivia", abbr: "Bol", flag: "🇧🇴" },
+  { code: "+58", country: "VE", name: "Venezuela", abbr: "Ven", flag: "🇻🇪" },
+  { code: "+507", country: "PA", name: "Panamá", abbr: "Pan", flag: "🇵🇦" },
+  { code: "+506", country: "CR", name: "Costa Rica", abbr: "CR", flag: "🇨🇷" },
+  { code: "+503", country: "SV", name: "El Salvador", abbr: "ES", flag: "🇸🇻" },
+  { code: "+504", country: "HN", name: "Honduras", abbr: "Hon", flag: "🇭🇳" },
+  { code: "+505", country: "NI", name: "Nicaragua", abbr: "Nca", flag: "🇳🇮" },
+  { code: "+502", country: "GT", name: "Guatemala", abbr: "Gua", flag: "🇬🇹" },
+  { code: "+1809", country: "DO", name: "Rep. Dominicana", abbr: "RD", flag: "🇩🇴" },
+  { code: "+53", country: "CU", name: "Cuba", abbr: "Cub", flag: "🇨🇺" },
+  { code: "+34", country: "ES", name: "España", abbr: "Esp", flag: "🇪🇸" },
+  { code: "+55", country: "BR", name: "Brasil", abbr: "Bra", flag: "🇧🇷" },
+  { code: "+44", country: "GB", name: "Reino Unido", abbr: "UK", flag: "🇬🇧" },
 ]
 
 function parsePhoneValue(value: string): { countryCode: string; number: string } {
@@ -90,12 +90,12 @@ export function PhoneInput({
     <div className={`relative ${className ?? ""}`}>
       <div className="flex">
         <Select value={countryCode} onValueChange={handleChangeCountry} disabled={disabled}>
-          <SelectTrigger className="w-[90px] shrink-0 rounded-r-none border-r-0 focus:z-10">
+          <SelectTrigger className="w-[75px] shrink-0 rounded-r-none border-r-0 focus:z-10">
             <SelectValue>
               {currentCountry ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="text-base leading-none">{currentCountry.flag}</span>
-                  <span className="text-sm font-medium">{currentCountry.code}</span>
+                <span className="flex items-center gap-1">
+                  <span className="text-sm leading-none">{currentCountry.flag}</span>
+                  <span className="text-xs font-medium">{currentCountry.abbr}</span>
                 </span>
               ) : countryCode}
             </SelectValue>
@@ -105,14 +105,14 @@ export function PhoneInput({
             sideOffset={4} 
             align="start" 
             alignItemWithTrigger={false}
-            className="z-[9999] w-[280px]"
+            className="z-[9999] w-[220px]"
           >
             {countryCodes.map((country) => (
               <SelectItem key={country.code} value={country.code}>
                 <span className="flex items-center gap-2">
-                  <span className="text-base leading-none">{country.flag}</span>
+                  <span className="text-sm leading-none">{country.flag}</span>
                   <span className="flex-1 text-sm">{country.name}</span>
-                  <span className="text-sm text-muted-foreground font-medium">{country.code}</span>
+                  <span className="text-xs text-muted-foreground font-medium">{country.code}</span>
                 </span>
               </SelectItem>
             ))}
