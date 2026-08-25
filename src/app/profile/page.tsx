@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Save, User, Shield, Settings, Store, Users, Package, CreditCard } from "lucide-react"
@@ -237,12 +238,10 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Teléfono</Label>
-                  <Input
+                  <PhoneInput
                     id="phone"
-                    type="tel"
                     value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="+57 300 123 4567"
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, phone: value }))}
                   />
                 </div>
               </div>

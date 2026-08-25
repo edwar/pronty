@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PhoneInput } from "@/components/ui/phone-input"
 import {
   Table,
   TableBody,
@@ -264,12 +265,10 @@ export function AdminsSection() {
 
             <div className="space-y-2">
               <Label htmlFor="phone">Teléfono (Celular)</Label>
-              <Input
+              <PhoneInput
                 id="phone"
-                type="tel"
-                placeholder="Ej. +57 300 123 4567"
                 value={formData.phone}
-                onChange={handleFormChange}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, phone: value }))}
               />
             </div>
 

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { ArrowLeft, Building2, UserPlus, CheckCircle2 } from "lucide-react"
 import { signUp } from "@/lib/auth-client"
 import { Loading } from "@/components/ui/loading"
@@ -190,12 +191,10 @@ function RegisterForm() {
 
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-sm font-medium">Teléfono</Label>
-              <Input 
-                id="phone" 
-                type="tel"
-                placeholder="+57 300 123 4567"
+              <PhoneInput
+                id="phone"
                 value={formData.phone}
-                onChange={handleChange}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, phone: value }))}
                 required
               />
             </div>
