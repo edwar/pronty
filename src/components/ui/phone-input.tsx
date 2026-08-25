@@ -99,7 +99,7 @@ export function PhoneInput({
             ) : countryCode}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="min-w-[200px]">
+        <SelectContent side="bottom" sideOffset={4} className="min-w-[var(--trigger-width)] z-[9999]">
           {countryCodes.map((country) => (
             <SelectItem key={country.code} value={country.code}>
               <span className="flex items-center gap-2 w-full">
