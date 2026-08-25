@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Save, User, Shield, Settings, Store, Users, Package, CreditCard } from "lucide-react"
+import { Save, User, Shield, Settings, Store, Users, Package, CreditCard, Camera, Loader2 } from "lucide-react"
 import { useUser } from "@/hooks/use-user"
 import { Loading } from "@/components/ui/loading"
 
@@ -57,6 +57,9 @@ export default function ProfilePage() {
     name: "",
     phone: "",
   })
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchProfile()
@@ -80,6 +83,7 @@ export default function ProfilePage() {
         name: data.user.name || "",
         phone: data.user.phone || "",
       })
+      setAvatarUrl(data.user.avatarUrl || null)
     } catch (error) {
       console.error("Error fetching profile:", error)
     } finally {
@@ -112,6 +116,56 @@ export default function ProfilePage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }))
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    setError(null)
+
+    try {
+      const formDataUpload = new FormData()
+      formDataUpload.append("file", file)
+      if (avatarUrl) {
+        formDataUpload.append("oldUrl", avatarUrl)
+      }
+
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataUpload,
+      })
+
+      if (!uploadRes.ok) {
+        const data = await uploadRes.json()
+        throw new Error(data.error || "Error al subir imagen")
+      }
+
+      const { url } = await uploadRes.json()
+
+      // Save avatar URL to profile
+      const profileRes = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatarUrl: url }),
+      })
+
+      if (!profileRes.ok) {
+        throw new Error("Error al guardar la imagen en el perfil")
+      }
+
+      setAvatarUrl(url)
+      setSuccess(true)
+      setTimeout(() => setSuccess(false), 3000)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error al subir imagen")
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -207,10 +261,31 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={profile?.user.avatarUrl || ""} alt={profile?.user.name || ""} />
-                  <AvatarFallback className="text-lg">{getInitials(profile?.user.name)}</AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={avatarUrl || ""} alt={profile?.user.name || ""} />
+                    <AvatarFallback className="text-lg">{getInitials(profile?.user.name)}</AvatarFallback>
+                  </Avatar>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {isUploading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Camera className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </div>
                 <div className="space-y-1">
                   <p className="font-medium">{profile?.user.email}</p>
                   <Badge

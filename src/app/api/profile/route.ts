@@ -63,7 +63,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const { name, phone, commerce } = body
+    const { name, phone, avatarUrl, commerce } = body
 
     // Check phone uniqueness within the same role
     if (phone) {
@@ -84,6 +84,7 @@ export async function PUT(request: Request) {
       data: {
         name: name || undefined,
         phone: phone || undefined,
+        avatarUrl: avatarUrl !== undefined ? avatarUrl : undefined,
       },
     })
 
