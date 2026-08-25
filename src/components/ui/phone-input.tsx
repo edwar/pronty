@@ -95,7 +95,7 @@ export function PhoneInput({
               {currentCountry ? (
                 <span className="flex items-center gap-1">
                   <span className="text-sm leading-none">{currentCountry.flag}</span>
-                  <span className="text-xs font-medium">{currentCountry.abbr}</span>
+                  <span className="text-xs font-medium">{currentCountry.code}</span>
                 </span>
               ) : countryCode}
             </SelectValue>
@@ -105,12 +105,13 @@ export function PhoneInput({
             sideOffset={4} 
             align="start" 
             alignItemWithTrigger={false}
-            className="z-[9999] w-[220px]"
+            className="z-[9999] w-[240px]"
           >
             {countryCodes.map((country) => (
               <SelectItem key={country.code} value={country.code}>
                 <span className="flex items-center gap-2">
                   <span className="text-sm leading-none">{country.flag}</span>
+                  <span className="text-xs text-muted-foreground font-medium w-7">{country.abbr}</span>
                   <span className="flex-1 text-sm">{country.name}</span>
                   <span className="text-xs text-muted-foreground font-medium">{country.code}</span>
                 </span>
