@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Search } from "lucide-react"
 
 interface PhoneInputProps {
   value: string
@@ -65,6 +65,10 @@ export function PhoneInput({
   const parsed = parsePhoneValue(value)
   const [countryCode, setCountryCode] = useState(parsed.countryCode)
   const [number, setNumber] = useState(parsed.number)
+  const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const newParsed = parsePhoneValue(value)
@@ -72,10 +76,40 @@ export function PhoneInput({
     if (newParsed.number !== number) setNumber(newParsed.number)
   }, [value])
 
-  const handleChangeCountry = (newCode: string | null) => {
-    if (!newCode) return
-    setCountryCode(newCode)
-    onValueChange(`${newCode} ${number}`.trim())
+  useEffect(() => {
+    if (isOpen && searchRef.current) {
+      searchRef.current.focus()
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+        setSearch("")
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const filteredCountries = useMemo(() => {
+    if (!search) return countryCodes
+    const lower = search.toLowerCase()
+    return countryCodes.filter(
+      (c) =>
+        c.name.toLowerCase().includes(lower) ||
+        c.abbr.toLowerCase().includes(lower) ||
+        c.code.includes(lower) ||
+        c.country.toLowerCase().includes(lower)
+    )
+  }, [search])
+
+  const handleChangeCountry = (code: string) => {
+    setCountryCode(code)
+    onValueChange(`${code} ${number}`.trim())
+    setIsOpen(false)
+    setSearch("")
   }
 
   const handleChangeNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,41 +118,26 @@ export function PhoneInput({
     onValueChange(`${countryCode} ${raw}`.trim())
   }
 
-  const currentCountry = countryCodes.find(c => c.code === countryCode)
+  const currentCountry = countryCodes.find((c) => c.code === countryCode)
 
   return (
     <div className={`relative ${className ?? ""}`}>
       <div className="flex">
-        <Select value={countryCode} onValueChange={handleChangeCountry} disabled={disabled}>
-          <SelectTrigger className="w-[75px] shrink-0 rounded-r-none border-r-0 focus:z-10">
-            <SelectValue>
-              {currentCountry ? (
-                <span className="flex items-center gap-1">
-                  <span className="text-sm leading-none">{currentCountry.flag}</span>
-                  <span className="text-xs font-medium">{currentCountry.code}</span>
-                </span>
-              ) : countryCode}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent 
-            side="bottom" 
-            sideOffset={4} 
-            align="start" 
-            alignItemWithTrigger={false}
-            className="z-[9999] w-[240px]"
-          >
-            {countryCodes.map((country) => (
-              <SelectItem key={country.code} value={country.code}>
-                <span className="flex items-center gap-2">
-                  <span className="text-sm leading-none">{country.flag}</span>
-                  <span className="text-xs text-muted-foreground font-medium w-7">{country.abbr}</span>
-                  <span className="flex-1 text-sm">{country.name}</span>
-                  <span className="text-xs text-muted-foreground font-medium">{country.code}</span>
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <button
+          type="button"
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+          className="flex w-[85px] shrink-0 items-center justify-center gap-1 rounded-l-lg border border-r-0 border-input bg-transparent py-2 text-sm transition-colors hover:bg-muted focus:z-10 focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {currentCountry ? (
+            <>
+              <span className="text-sm leading-none">{currentCountry.flag}</span>
+              <span className="text-xs font-medium">{currentCountry.code}</span>
+            </>
+          ) : (
+            countryCode
+          )}
+        </button>
         <Input
           id={id}
           type="tel"
@@ -130,6 +149,48 @@ export function PhoneInput({
           className="flex-1 min-w-0 rounded-l-none focus:z-10"
         />
       </div>
+
+      {isOpen && (
+        <div
+          ref={dropdownRef}
+          className="absolute top-full left-0 z-[9999] mt-1 w-[260px] rounded-lg border border-border bg-popover shadow-md"
+        >
+          <div className="border-b border-border p-2">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar país..."
+                className="w-full rounded-md border border-input bg-background py-1.5 pl-8 pr-3 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+              />
+            </div>
+          </div>
+          <div className="max-h-[240px] overflow-y-auto p-1">
+            {filteredCountries.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">No se encontraron países</div>
+            ) : (
+              filteredCountries.map((country) => (
+                <button
+                  key={country.code}
+                  type="button"
+                  onClick={() => handleChangeCountry(country.code)}
+                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent ${
+                    countryCode === country.code ? "bg-accent" : ""
+                  }`}
+                >
+                  <span className="text-sm leading-none">{country.flag}</span>
+                  <span className="text-xs text-muted-foreground font-medium w-7">{country.abbr}</span>
+                  <span className="flex-1 text-sm">{country.name}</span>
+                  <span className="text-xs text-muted-foreground font-medium">{country.code}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
