@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { ArrowLeft, CheckCircle2, Zap } from "lucide-react"
 import { Loading } from "@/components/ui/loading"
 
@@ -134,13 +135,11 @@ export default function DriverRegisterPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Teléfono (WhatsApp)</Label>
-                  <Input 
-                    id="phone" 
-                    type="tel" 
-                    placeholder="+57 300 123 4567" 
+                  <PhoneInput
+                    id="phone"
                     value={formData.phone}
-                    onChange={handleChange}
-                    required 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, phone: value }))}
+                    required
                   />
                   <p className="text-xs text-muted-foreground">Recibirás notificaciones por este número</p>
                 </div>

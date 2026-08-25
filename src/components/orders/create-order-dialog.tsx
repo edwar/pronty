@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { NumberInput } from "@/components/ui/number-input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { Loader2, AlertCircle, MapPin, Calculator, Store } from "lucide-react"
 import { haversineDistance, calculateDeliveryFee, formatDistance } from "@/lib/distance"
 
@@ -325,12 +326,10 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
               </div>
               <div className="space-y-2">
                 <Label htmlFor="recipientPhone">Teléfono *</Label>
-                <Input
+                <PhoneInput
                   id="recipientPhone"
-                  type="tel"
-                  placeholder="+57 300 123 4567"
                   value={recipientPhone}
-                  onChange={(e) => setRecipientPhone(e.target.value)}
+                  onValueChange={setRecipientPhone}
                   required
                 />
               </div>
