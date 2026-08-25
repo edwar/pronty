@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { PhoneInput } from "@/components/ui/phone-input"
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle
@@ -400,11 +401,10 @@ export function BranchesSection() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="branchPhone">Teléfono</Label>
-                  <Input
+                  <PhoneInput
                     id="branchPhone"
                     value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="300 123 4567"
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, phone: value }))}
                   />
                 </div>
                 <div className="space-y-2">
