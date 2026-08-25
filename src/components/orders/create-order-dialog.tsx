@@ -247,13 +247,13 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle>Crear Nuevo Pedido</DialogTitle>
           <DialogDescription>Completa los datos para solicitar un nuevo servicio de domicilio.</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {error && (
             <div className="p-3 rounded-md bg-destructive/10 text-destructive text-xs flex items-center gap-2">
               <AlertCircle className="h-4 w-4 shrink-0" />
@@ -480,7 +480,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
             )}
           </div>
 
-          <DialogFooter className="pt-2">
+          <DialogFooter className="sticky bottom-0 bg-background border-t px-6 py-4 -mx-6 -mb-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancelar
             </Button>
