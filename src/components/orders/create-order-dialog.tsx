@@ -49,7 +49,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   const [drivers, setDrivers] = useState<Driver[]>([])
   const [branches, setBranches] = useState<Branch[]>([])
   const [selectedBranchId, setSelectedBranchId] = useState<string>("")
-  
+
   const [recipientName, setRecipientName] = useState("")
   const [recipientPhone, setRecipientPhone] = useState("")
   const [pickupAddress, setPickupAddress] = useState("")
@@ -58,7 +58,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   const [deliveryNotes, setDeliveryNotes] = useState("")
   const [packageDescription, setPackageDescription] = useState("")
   const [fee, setFee] = useState(5000)
-  
+
   const [pricing, setPricing] = useState<DeliveryPricing>({ baseFee: 5000, pricePerKm: 1500 })
   const [distance, setDistance] = useState<number | null>(null)
   const [deliveryLat, setDeliveryLat] = useState<number | null>(null)
@@ -101,7 +101,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
         const data = await res.json()
         const branchList = data.branches || []
         setBranches(branchList)
-        
+
         // Select default branch
         const defaultBranch = branchList.find((b: Branch) => b.isDefault)
         if (defaultBranch) {
@@ -248,238 +248,238 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] h-[90vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
+        <DialogHeader className="px-6 pt-10 pb-4 border-b shrink-0">
           <DialogTitle>Crear Nuevo Pedido</DialogTitle>
           <DialogDescription>Completa los datos para solicitar un nuevo servicio de domicilio.</DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
           <form id="order-form" onSubmit={handleSubmit} className="space-y-5">
-          {error && (
-            <div className="p-3 rounded-md bg-destructive/10 text-destructive text-xs flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sucursal de Origen</h4>
-            {branches.length === 0 ? (
-              <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
-                <Store className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  No hay sucursales configuradas. Agrega una en{" "}
-                  <span className="font-medium text-foreground">Configuración → Sucursales</span>
-                </span>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label>Sucursal *</Label>
-                <Select value={selectedBranchId} onValueChange={(v) => v && handleBranchChange(v)}>
-                  <SelectTrigger>
-                    <SelectValue>
-                      {branches.find(b => b.id === selectedBranchId)
-                        ? `${branches.find(b => b.id === selectedBranchId)!.name} — ${branches.find(b => b.id === selectedBranchId)!.address}`
-                        : "Seleccionar sucursal"}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches.map((branch) => (
-                      <SelectItem key={branch.id} value={branch.id}>
-                        {branch.name} — {branch.address}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {error && (
+              <div className="p-3 rounded-md bg-destructive/10 text-destructive text-xs flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{error}</span>
               </div>
             )}
-            {selectedBranchId && (
-              <div className="space-y-2">
-                <Label htmlFor="pickupAddress">Dirección de Recogida *</Label>
-                <Input
-                  id="pickupAddress"
-                  placeholder="Dirección de la sucursal"
-                  value={pickupAddress}
-                  onChange={(e) => setPickupAddress(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="pickupNotes">Notas de Recogida</Label>
-              <Textarea
-                id="pickupNotes"
-                placeholder="Instrucciones para empacar o entregar..."
-                value={pickupNotes}
-                onChange={(e) => setPickupNotes(e.target.value)}
-              />
-            </div>
-          </div>
 
-          <div className="space-y-4">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Destinatario</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="recipientName">Nombre Completo *</Label>
-                <Input
-                  id="recipientName"
-                  placeholder="Ej. María García"
-                  value={recipientName}
-                  onChange={(e) => setRecipientName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="recipientPhone">Teléfono *</Label>
-                <PhoneInput
-                  id="recipientPhone"
-                  value={recipientPhone}
-                  onValueChange={setRecipientPhone}
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Entrega</h4>
-            <div className="space-y-2">
-              <Label htmlFor="deliveryAddress">Dirección de Entrega *</Label>
-              <Input
-                id="deliveryAddress"
-                placeholder="Av. Principal #89-12, Apto 302"
-                value={deliveryAddress}
-                onChange={(e) => setDeliveryAddress(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="deliveryNotes">Notas de Entrega</Label>
-              <Textarea
-                id="deliveryNotes"
-                placeholder="Entregar en portería, timbrar en el 302..."
-                value={deliveryNotes}
-                onChange={(e) => setDeliveryNotes(e.target.value)}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="deliveryLat">Latitud destino</Label>
-                <Input
-                  id="deliveryLat"
-                  type="number"
-                  step="any"
-                  placeholder="4.7110"
-                  value={deliveryLat ?? ""}
-                  onChange={(e) => {
-                    const lat = e.target.value ? parseFloat(e.target.value) : null
-                    setDeliveryLat(lat)
-                    if (lat && deliveryLng) {
-                      handleDeliveryLocationChange(lat, deliveryLng)
-                    }
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="deliveryLng">Longitud destino</Label>
-                <Input
-                  id="deliveryLng"
-                  type="number"
-                  step="any"
-                  placeholder="-74.0721"
-                  value={deliveryLng ?? ""}
-                  onChange={(e) => {
-                    const lng = e.target.value ? parseFloat(e.target.value) : null
-                    setDeliveryLng(lng)
-                    if (deliveryLat && lng) {
-                      handleDeliveryLocationChange(deliveryLat, lng)
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Paquete y Tarifa</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="packageDescription">Descripción del Paquete</Label>
-                <Input
-                  id="packageDescription"
-                  placeholder="Ej. 2 Hamburguesas + Bebidas"
-                  value={packageDescription}
-                  onChange={(e) => setPackageDescription(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="fee">Tarifa ($ COP) *</Label>
-                <NumberInput
-                  id="fee"
-                  value={fee}
-                  onValueChange={(val) => setFee(val)}
-                  min={500}
-                />
-              </div>
-            </div>
-            {distance !== null && (
-              <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
-                <Calculator className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  Distancia: <span className="font-medium text-foreground">{formatDistance(distance)}</span>
-                  {" "}— Tarifa calculada: <span className="font-medium text-foreground">${fee.toLocaleString("es-CO")}</span>
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Asignación</h4>
-            <RadioGroup
-              value={assignmentType}
-              onValueChange={(v) => setAssignmentType(v as "DIRECT" | "BROADCAST")}
-              className="grid grid-cols-2 gap-3"
-            >
-              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border/60 p-3 transition-colors hover:bg-muted/50 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5">
-                <RadioGroupItem value="DIRECT" id="direct" />
-                <div>
-                  <div className="text-sm font-medium">Directa</div>
-                  <div className="text-[11px] text-muted-foreground">A un domiciliario específico</div>
+            <div className="space-y-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sucursal de Origen</h4>
+              {branches.length === 0 ? (
+                <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
+                  <Store className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    No hay sucursales configuradas. Agrega una en{" "}
+                    <span className="font-medium text-foreground">Configuración → Sucursales</span>
+                  </span>
                 </div>
-              </label>
-              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border/60 p-3 transition-colors hover:bg-muted/50 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5">
-                <RadioGroupItem value="BROADCAST" id="broadcast" />
-                <div>
-                  <div className="text-sm font-medium">Broadcast</div>
-                  <div className="text-[11px] text-muted-foreground">Oferta a todo el grupo activo</div>
-                </div>
-              </label>
-            </RadioGroup>
-
-            {assignmentType === "DIRECT" && (
-              <div className="space-y-2">
-                <Label>Domiciliario *</Label>
-                <Select value={driverId} onValueChange={(v) => setDriverId(v || "")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar domiciliario activo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {drivers.length === 0 ? (
-                      <SelectItem value="none" disabled>
-                        No hay domiciliarios activos en este momento
-                      </SelectItem>
-                    ) : (
-                      drivers.map((drv) => (
-                        <SelectItem key={drv.id} value={drv.id}>
-                          {drv.fullName} — {drv.vehicleType}
+              ) : (
+                <div className="space-y-2">
+                  <Label>Sucursal *</Label>
+                  <Select value={selectedBranchId} onValueChange={(v) => v && handleBranchChange(v)}>
+                    <SelectTrigger>
+                      <SelectValue>
+                        {branches.find(b => b.id === selectedBranchId)
+                          ? `${branches.find(b => b.id === selectedBranchId)!.name} — ${branches.find(b => b.id === selectedBranchId)!.address}`
+                          : "Seleccionar sucursal"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map((branch) => (
+                        <SelectItem key={branch.id} value={branch.id}>
+                          {branch.name} — {branch.address}
                         </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {selectedBranchId && (
+                <div className="space-y-2">
+                  <Label htmlFor="pickupAddress">Dirección de Recogida *</Label>
+                  <Input
+                    id="pickupAddress"
+                    placeholder="Dirección de la sucursal"
+                    value={pickupAddress}
+                    onChange={(e) => setPickupAddress(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="pickupNotes">Notas de Recogida</Label>
+                <Textarea
+                  id="pickupNotes"
+                  placeholder="Instrucciones para empacar o entregar..."
+                  value={pickupNotes}
+                  onChange={(e) => setPickupNotes(e.target.value)}
+                />
               </div>
-            )}
-          </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Destinatario</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="recipientName">Nombre Completo *</Label>
+                  <Input
+                    id="recipientName"
+                    placeholder="Ej. María García"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="recipientPhone">Teléfono *</Label>
+                  <PhoneInput
+                    id="recipientPhone"
+                    value={recipientPhone}
+                    onValueChange={setRecipientPhone}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Entrega</h4>
+              <div className="space-y-2">
+                <Label htmlFor="deliveryAddress">Dirección de Entrega *</Label>
+                <Input
+                  id="deliveryAddress"
+                  placeholder="Av. Principal #89-12, Apto 302"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="deliveryNotes">Notas de Entrega</Label>
+                <Textarea
+                  id="deliveryNotes"
+                  placeholder="Entregar en portería, timbrar en el 302..."
+                  value={deliveryNotes}
+                  onChange={(e) => setDeliveryNotes(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryLat">Latitud destino</Label>
+                  <Input
+                    id="deliveryLat"
+                    type="number"
+                    step="any"
+                    placeholder="4.7110"
+                    value={deliveryLat ?? ""}
+                    onChange={(e) => {
+                      const lat = e.target.value ? parseFloat(e.target.value) : null
+                      setDeliveryLat(lat)
+                      if (lat && deliveryLng) {
+                        handleDeliveryLocationChange(lat, deliveryLng)
+                      }
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryLng">Longitud destino</Label>
+                  <Input
+                    id="deliveryLng"
+                    type="number"
+                    step="any"
+                    placeholder="-74.0721"
+                    value={deliveryLng ?? ""}
+                    onChange={(e) => {
+                      const lng = e.target.value ? parseFloat(e.target.value) : null
+                      setDeliveryLng(lng)
+                      if (deliveryLat && lng) {
+                        handleDeliveryLocationChange(deliveryLat, lng)
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Paquete y Tarifa</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="packageDescription">Descripción del Paquete</Label>
+                  <Input
+                    id="packageDescription"
+                    placeholder="Ej. 2 Hamburguesas + Bebidas"
+                    value={packageDescription}
+                    onChange={(e) => setPackageDescription(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fee">Tarifa ($ COP) *</Label>
+                  <NumberInput
+                    id="fee"
+                    value={fee}
+                    onValueChange={(val) => setFee(val)}
+                    min={500}
+                  />
+                </div>
+              </div>
+              {distance !== null && (
+                <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
+                  <Calculator className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    Distancia: <span className="font-medium text-foreground">{formatDistance(distance)}</span>
+                    {" "}— Tarifa calculada: <span className="font-medium text-foreground">${fee.toLocaleString("es-CO")}</span>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Asignación</h4>
+              <RadioGroup
+                value={assignmentType}
+                onValueChange={(v) => setAssignmentType(v as "DIRECT" | "BROADCAST")}
+                className="grid grid-cols-2 gap-3"
+              >
+                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border/60 p-3 transition-colors hover:bg-muted/50 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5">
+                  <RadioGroupItem value="DIRECT" id="direct" />
+                  <div>
+                    <div className="text-sm font-medium">Directa</div>
+                    <div className="text-[11px] text-muted-foreground">A un domiciliario específico</div>
+                  </div>
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border/60 p-3 transition-colors hover:bg-muted/50 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5">
+                  <RadioGroupItem value="BROADCAST" id="broadcast" />
+                  <div>
+                    <div className="text-sm font-medium">Broadcast</div>
+                    <div className="text-[11px] text-muted-foreground">Oferta a todo el grupo activo</div>
+                  </div>
+                </label>
+              </RadioGroup>
+
+              {assignmentType === "DIRECT" && (
+                <div className="space-y-2">
+                  <Label>Domiciliario *</Label>
+                  <Select value={driverId} onValueChange={(v) => setDriverId(v || "")}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar domiciliario activo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {drivers.length === 0 ? (
+                        <SelectItem value="none" disabled>
+                          No hay domiciliarios activos en este momento
+                        </SelectItem>
+                      ) : (
+                        drivers.map((drv) => (
+                          <SelectItem key={drv.id} value={drv.id}>
+                            {drv.fullName} — {drv.vehicleType}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
 
           </form>
         </div>
