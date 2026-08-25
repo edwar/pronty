@@ -247,13 +247,14 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+      <DialogContent className="sm:max-w-[600px] h-[90vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle>Crear Nuevo Pedido</DialogTitle>
           <DialogDescription>Completa los datos para solicitar un nuevo servicio de domicilio.</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <form id="order-form" onSubmit={handleSubmit} className="space-y-5">
           {error && (
             <div className="p-3 rounded-md bg-destructive/10 text-destructive text-xs flex items-center gap-2">
               <AlertCircle className="h-4 w-4 shrink-0" />
@@ -480,22 +481,24 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
             )}
           </div>
 
-          <DialogFooter className="sticky bottom-0 bg-background border-t px-6 py-4 -mx-6 -mb-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creando...
-                </>
-              ) : (
-                "Crear Pedido (-1 Crédito)"
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+          </form>
+        </div>
+
+        <DialogFooter className="shrink-0 bg-background border-t px-6 py-4">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button type="submit" form="order-form" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creando...
+              </>
+            ) : (
+              "Crear Pedido (-1 Crédito)"
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
