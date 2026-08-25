@@ -32,7 +32,7 @@ const countryCodes = [
   { code: "+504", country: "HN", name: "Honduras", flag: "🇭🇳" },
   { code: "+505", country: "NI", name: "Nicaragua", flag: "🇳🇮" },
   { code: "+502", country: "GT", name: "Guatemala", flag: "🇬🇹" },
-  { code: "+1809", country: "DO", name: "República Dominicana", flag: "🇩🇴" },
+  { code: "+1809", country: "DO", name: "Rep. Dominicana", flag: "🇩🇴" },
   { code: "+53", country: "CU", name: "Cuba", flag: "🇨🇺" },
   { code: "+34", country: "ES", name: "España", flag: "🇪🇸" },
   { code: "+55", country: "BR", name: "Brasil", flag: "🇧🇷" },
@@ -84,24 +84,28 @@ export function PhoneInput({
     onValueChange(`${countryCode} ${raw}`.trim())
   }
 
+  const currentCountry = countryCodes.find(c => c.code === countryCode)
+
   return (
-    <div className={`flex gap-2 ${className ?? ""}`}>
+    <div className={`flex ${className ?? ""}`}>
       <Select value={countryCode} onValueChange={handleChangeCountry} disabled={disabled}>
-        <SelectTrigger className="w-[100px] shrink-0">
+        <SelectTrigger className="w-[90px] shrink-0 rounded-r-none border-r-0 focus:z-10">
           <SelectValue>
-            {(() => {
-              const country = countryCodes.find(c => c.code === countryCode)
-              return country ? `${country.flag} ${country.code}` : countryCode
-            })()}
+            {currentCountry ? (
+              <span className="flex items-center gap-1.5">
+                <span className="text-base leading-none">{currentCountry.flag}</span>
+                <span className="text-sm font-medium">{currentCountry.code}</span>
+              </span>
+            ) : countryCode}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="min-w-[200px]">
           {countryCodes.map((country) => (
             <SelectItem key={country.code} value={country.code}>
-              <span className="flex items-center gap-2">
-                <span>{country.flag}</span>
-                <span className="text-muted-foreground text-xs">{country.code}</span>
-                <span>{country.name}</span>
+              <span className="flex items-center gap-2 w-full">
+                <span className="text-base leading-none">{country.flag}</span>
+                <span className="flex-1 text-sm">{country.name}</span>
+                <span className="text-sm text-muted-foreground font-medium">{country.code}</span>
               </span>
             </SelectItem>
           ))}
@@ -115,7 +119,7 @@ export function PhoneInput({
         onChange={handleChangeNumber}
         placeholder={placeholder}
         disabled={disabled}
-        className="flex-1 min-w-0"
+        className="flex-1 min-w-0 rounded-l-none focus:z-10"
       />
     </div>
   )
