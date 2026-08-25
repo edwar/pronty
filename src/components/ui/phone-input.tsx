@@ -153,7 +153,7 @@ export function PhoneInput({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 z-[9999] mt-1 w-[260px] rounded-lg border border-border bg-popover shadow-md"
+          className="absolute top-full left-0 z-[9999] mt-1 w-[230px] rounded-lg border border-border bg-popover shadow-md"
         >
           <div className="border-b border-border p-2">
             <div className="relative">
@@ -177,12 +177,10 @@ export function PhoneInput({
                   key={country.code}
                   type="button"
                   onClick={() => handleChangeCountry(country.code)}
-                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent ${
-                    countryCode === country.code ? "bg-accent" : ""
-                  }`}
+                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent ${countryCode === country.code ? "bg-accent" : ""
+                    }`}
                 >
                   <span className="text-sm leading-none">{country.flag}</span>
-                  <span className="text-xs text-muted-foreground font-medium w-7">{country.abbr}</span>
                   <span className="flex-1 text-sm">{country.name}</span>
                   <span className="text-xs text-muted-foreground font-medium">{country.code}</span>
                 </button>

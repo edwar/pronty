@@ -84,7 +84,13 @@ export default function OrdersPage() {
               <SelectTrigger className="h-9 text-sm">
                 <div className="flex items-center gap-1.5">
                   <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <SelectValue placeholder="Filtrar por estado" />
+                  <SelectValue>
+                    {statusFilter === "ALL" ? "Todos los estados" :
+                     statusFilter === "PENDING" ? "Pendientes" :
+                     statusFilter === "IN_TRANSIT" ? "En entrega / Tránsito" :
+                     statusFilter === "DELIVERED" ? "Entregados" :
+                     statusFilter === "CANCELLED" ? "Cancelados" : "Filtrar por estado"}
+                  </SelectValue>
                 </div>
               </SelectTrigger>
               <SelectContent>

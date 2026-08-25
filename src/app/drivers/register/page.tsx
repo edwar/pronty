@@ -165,7 +165,9 @@ export default function DriverRegisterPage() {
                     value={formData.vehicleType}
                     onValueChange={(value) => handleSelectChange("vehicleType", value)}
                   >
-                    <SelectTrigger><SelectValue placeholder="Seleccionar vehículo" /></SelectTrigger>
+                    <SelectTrigger><SelectValue>
+                      {formData.vehicleType || "Seleccionar vehículo"}
+                    </SelectValue></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="BICYCLE">Bicicleta</SelectItem>
                       <SelectItem value="MOTORCYCLE">Motocicleta</SelectItem>
@@ -190,7 +192,9 @@ export default function DriverRegisterPage() {
                     value={formData.city}
                     onValueChange={(value) => handleSelectChange("city", value)}
                   >
-                    <SelectTrigger><SelectValue placeholder="Seleccionar ciudad" /></SelectTrigger>
+                    <SelectTrigger><SelectValue>
+                      {formData.city || "Seleccionar ciudad"}
+                    </SelectValue></SelectTrigger>
                     <SelectContent>
                       {colombianCities.map(city => (
                         <SelectItem key={city} value={city}>{city}</SelectItem>

@@ -276,7 +276,11 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
                 <Label>Sucursal *</Label>
                 <Select value={selectedBranchId} onValueChange={(v) => v && handleBranchChange(v)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar sucursal" />
+                    <SelectValue>
+                      {branches.find(b => b.id === selectedBranchId)
+                        ? `${branches.find(b => b.id === selectedBranchId)!.name} — ${branches.find(b => b.id === selectedBranchId)!.address}`
+                        : "Seleccionar sucursal"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {branches.map((branch) => (

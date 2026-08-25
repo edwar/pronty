@@ -68,10 +68,10 @@ const colombianCities = [
   "Funza", "Madrid", "Fontibón", "Kennedy",
   "Fusagasugá", "Arbeláez", "San Bernardo", "Silvania", "Granada",
   "Chocontá", "Machetá", "Manta", "Sesquilé", "Guasca",
-  "Gachalá", "Ubalá", "Gachetá", "Gachancipá",
+  "Gachalá", "Ubalá", "Gachetá",
   "Ubaté", "Fúquene", "Tausa", "Sutatausa", "Carmen de Carupa",
   "Anapoima", "Apaneca", "Apulo", "La Mesa", "Tena",
-  "Viotá", "Cachipay", "Tocaima", "Agua de Dios",
+  "Viotá", "Cachipay",
 ]
 
 const daysOfWeek = [
@@ -429,7 +429,9 @@ export function BranchesSection() {
                     onValueChange={(value) => setFormData(prev => ({ ...prev, city: value || "" }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar ciudad" />
+                      <SelectValue>
+                        {formData.city || "Seleccionar ciudad"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {colombianCities.map(city => (
