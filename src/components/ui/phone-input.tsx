@@ -87,40 +87,48 @@ export function PhoneInput({
   const currentCountry = countryCodes.find(c => c.code === countryCode)
 
   return (
-    <div className={`flex ${className ?? ""}`}>
-      <Select value={countryCode} onValueChange={handleChangeCountry} disabled={disabled}>
-        <SelectTrigger className="w-[90px] shrink-0 rounded-r-none border-r-0 focus:z-10">
-          <SelectValue>
-            {currentCountry ? (
-              <span className="flex items-center gap-1.5">
-                <span className="text-base leading-none">{currentCountry.flag}</span>
-                <span className="text-sm font-medium">{currentCountry.code}</span>
-              </span>
-            ) : countryCode}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent side="bottom" sideOffset={4} className="min-w-[var(--trigger-width)] z-[9999]">
-          {countryCodes.map((country) => (
-            <SelectItem key={country.code} value={country.code}>
-              <span className="flex items-center gap-2 w-full">
-                <span className="text-base leading-none">{country.flag}</span>
-                <span className="flex-1 text-sm">{country.name}</span>
-                <span className="text-sm text-muted-foreground font-medium">{country.code}</span>
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Input
-        id={id}
-        type="tel"
-        inputMode="numeric"
-        value={number}
-        onChange={handleChangeNumber}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="flex-1 min-w-0 rounded-l-none focus:z-10"
-      />
+    <div className={`relative ${className ?? ""}`}>
+      <div className="flex">
+        <Select value={countryCode} onValueChange={handleChangeCountry} disabled={disabled}>
+          <SelectTrigger className="w-[90px] shrink-0 rounded-r-none border-r-0 focus:z-10">
+            <SelectValue>
+              {currentCountry ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="text-base leading-none">{currentCountry.flag}</span>
+                  <span className="text-sm font-medium">{currentCountry.code}</span>
+                </span>
+              ) : countryCode}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent 
+            side="bottom" 
+            sideOffset={4} 
+            align="start" 
+            alignItemWithTrigger={false}
+            className="z-[9999] w-[280px]"
+          >
+            {countryCodes.map((country) => (
+              <SelectItem key={country.code} value={country.code}>
+                <span className="flex items-center gap-2">
+                  <span className="text-base leading-none">{country.flag}</span>
+                  <span className="flex-1 text-sm">{country.name}</span>
+                  <span className="text-sm text-muted-foreground font-medium">{country.code}</span>
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          id={id}
+          type="tel"
+          inputMode="numeric"
+          value={number}
+          onChange={handleChangeNumber}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="flex-1 min-w-0 rounded-l-none focus:z-10"
+        />
+      </div>
     </div>
   )
 }
