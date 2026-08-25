@@ -29,6 +29,13 @@ export default function DriverRegisterPage() {
     "Cartagena", "Cúcuta", "Ibagué", "Pereira", "Santa Marta",
     "Villavicencio", "Manizales", "Neiva", "Pasto", "Armenia",
     "Popayán", "Montería", "Sincelejo", "Valledupar", "Tulúa",
+    "Girardot", "Tocaima", "Flandes", "Ricaurte", "Agua de Dios",
+    "Melgar", "Cajicá", "Chía", "Cota", "Soacha",
+    "Facatativá", "Fusagasugá", "Zipaquirá", "Ubaté", "Villeta",
+    "Nimaima", "Nocaima", "Quebradanegra", "San Antonio del Tequendama",
+    "Bojacá", "Mosquera", "Funza", "Madrid", "Subachoque",
+    "El Colegio", "Anapoima", "Apaneca", "Apulo", "La Mesa",
+    "Tena", "Viotá", "Cogua", "Sesquilé", "Suesca",
   ]
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
