@@ -8,20 +8,20 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { 
-  Dialog, DialogContent, DialogDescription, DialogFooter, 
-  DialogHeader, DialogTitle 
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle
 } from "@/components/ui/dialog"
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table"
-import { 
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { 
-  Store, Plus, MoreHorizontal, Pencil, Trash2, 
-  Star, Loader2, Clock 
+import {
+  Store, Plus, MoreHorizontal, Pencil, Trash2,
+  Star, Loader2, Clock
 } from "lucide-react"
 import { Loading } from "@/components/ui/loading"
 
@@ -340,7 +340,7 @@ export function BranchesSection() {
                               Marcar como default
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => handleDelete(branch.id)}
                             className="text-destructive"
                           >
@@ -364,8 +364,8 @@ export function BranchesSection() {
                 {editingBranch ? "Editar Sucursal" : "Nueva Sucursal"}
               </DialogTitle>
               <DialogDescription>
-                {editingBranch 
-                  ? "Actualiza los datos de la sucursal" 
+                {editingBranch
+                  ? "Actualiza los datos de la sucursal"
                   : "Agrega una nueva ubicación de tu negocio"}
               </DialogDescription>
             </DialogHeader>
@@ -449,19 +449,22 @@ export function BranchesSection() {
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
 
-              <div className="space-y-2">
-                <Label htmlFor="branchPrefix">Prefijo de Pedidos</Label>
-                <Input
-                  id="branchPrefix"
-                  value={formData.orderPrefix}
-                  onChange={(e) => setFormData(prev => ({ ...prev, orderPrefix: e.target.value.toUpperCase() }))}
-                  placeholder="ORD"
-                  className="max-w-[150px] font-mono"
-                />
-                <p className="text-[11px] text-muted-foreground">
-                  Ejemplo: <span className="font-mono">{formData.orderPrefix || "ORD"}-0001</span>
-                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="branchPrefix">Prefijo de Pedidos</Label>
+                  <Input
+                    id="branchPrefix"
+                    value={formData.orderPrefix}
+                    onChange={(e) => setFormData(prev => ({ ...prev, orderPrefix: e.target.value.toUpperCase() }))}
+                    placeholder="ORD"
+                    className="font-mono"
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Ejemplo: <span className="font-mono">{formData.orderPrefix || "ORD"}-0001</span>
+                  </p>
+                </div>
+                <div className="space-y-2"></div>
               </div>
 
               <div className="space-y-2">
