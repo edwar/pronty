@@ -248,7 +248,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] h-[90vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-10 pb-4 border-b shrink-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle>Crear Nuevo Pedido</DialogTitle>
           <DialogDescription>Completa los datos para solicitar un nuevo servicio de domicilio.</DialogDescription>
         </DialogHeader>
