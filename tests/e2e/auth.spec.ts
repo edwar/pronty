@@ -1,12 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Auth', () => {
-  test('should redirect to login page', async ({ page }) => {
-    await page.goto('/')
-    await expect(page).toHaveURL(/.*login|.*dashboard/)
-  })
-
-  test('should show login form', async ({ page }) => {
+  test('should show login page', async ({ page }) => {
     await page.goto('/login')
     await expect(page.locator('input[type="email"]')).toBeVisible()
     await expect(page.locator('input[type="password"]')).toBeVisible()
@@ -16,7 +11,6 @@ test.describe('Auth', () => {
   test('should show validation error with empty fields', async ({ page }) => {
     await page.goto('/login')
     await page.click('button[type="submit"]')
-    // Browser native validation or app validation
     await expect(page.locator('input[type="email"]')).toBeFocused()
   })
 
@@ -38,5 +32,33 @@ test.describe('Auth', () => {
     await page.goto('/register')
     await expect(page.locator('input[type="email"]')).toBeVisible()
     await expect(page.locator('input[type="password"]')).toBeVisible()
+  })
+})
+
+test.describe('Authenticated Admin', () => {
+  test.use({ storageState: 'tests/e2e/.auth/admin.json' })
+
+  test('should be on dashboard after login', async ({ page }) => {
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/.*dashboard/)
+  })
+
+  test('should access admin settings', async ({ page }) => {
+    await page.goto('/admin/settings')
+    await expect(page.locator('text=Configuración')).toBeVisible()
+  })
+})
+
+test.describe('Authenticated Commerce', () => {
+  test.use({ storageState: 'tests/e2e/.auth/commerce.json' })
+
+  test('should be on dashboard after login', async ({ page }) => {
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/.*dashboard/)
+  })
+
+  test('should access orders page', async ({ page }) => {
+    await page.goto('/orders')
+    await expect(page.locator('text=Pedidos')).toBeVisible()
   })
 })

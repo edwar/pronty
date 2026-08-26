@@ -15,6 +15,26 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
+      name: 'admin',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/e2e/.auth/admin.json',
+      },
+      dependencies: ['setup'],
+    },
+    {
+      name: 'commerce',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/e2e/.auth/commerce.json',
+      },
+      dependencies: ['setup'],
+    },
+    {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
