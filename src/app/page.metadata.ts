@@ -14,10 +14,11 @@ export const metadata: Metadata = {
     siteName: "Pronty",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.svg",
         width: 1200,
         height: 630,
         alt: "Pronty — Sistema Profesional de Delivery",
+        type: "image/svg+xml",
       },
     ],
     locale: "es_CO",
@@ -28,6 +29,6 @@ export const metadata: Metadata = {
     title: "Pronty — Delivery Profesional para Negocios Locales",
     description:
       "Gestiona pedidos, domiciliarios y pagos desde un solo panel. Todo por WhatsApp.",
-    images: ["/og-image.png"],
+    images: ["/og-image.svg"],
   },
 };

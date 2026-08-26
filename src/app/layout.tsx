@@ -57,10 +57,11 @@ export const metadata: Metadata = {
       "Gestiona pedidos, domiciliarios y pagos desde un solo panel. Sin app para repartidores — todo por WhatsApp.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.svg",
         width: 1200,
         height: 630,
         alt: "Pronty — Sistema Profesional de Delivery",
+        type: "image/svg+xml",
       },
     ],
   },
@@ -69,7 +70,7 @@ export const metadata: Metadata = {
     title: "Pronty — Delivery Profesional para Negocios Locales",
     description:
       "Gestiona pedidos, domiciliarios y pagos desde un solo panel. Todo por WhatsApp.",
-    images: ["/og-image.png"],
+    images: ["/og-image.svg"],
   },
   robots: {
     index: true,

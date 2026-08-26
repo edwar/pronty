@@ -1,0 +1,57 @@
+<svg viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0a0a0a"/>
+  
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1e1b4b" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#0f172a" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0" y1="0" x2="400" y2="400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#6d28d9"/>
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="1050" cy="150" r="200" fill="#2563eb" fill-opacity="0.1"/>
+  <circle cx="150" cy="500" r="150" fill="#6d28d9" fill-opacity="0.1"/>
+  
+  <!-- Logo -->
+  <g transform="translate(80, 180)">
+    <rect width="80" height="80" rx="20" fill="url(#accentGrad)"/>
+    <g stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M44 24h6"/>
+      <path d="M50 24l6 32"/>
+      <path d="M24 56h6l5-8h20"/>
+      <circle cx="24" cy="56" r="6"/>
+      <circle cx="56" cy="56" r="6"/>
+    </g>
+    <rect x="14" y="28" width="16" height="14" rx="3" fill="white"/>
+  </g>
+  
+  <!-- Title -->
+  <text x="80" y="320" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="white">
+    Pronty
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="80" y="380" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#94a3b8">
+    Delivery Profesional para Negocios Locales
+  </text>
+  
+  <!-- Description -->
+  <text x="80" y="430" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#64748b">
+    Gestiona pedidos, domiciliarios y pagos desde un solo panel.
+  </text>
+  <text x="80" y="460" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#64748b">
+    Todo por WhatsApp — sin app para repartidores.
+  </text>
+  
+  <!-- URL -->
+  <text x="80" y="560" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#3b82f6">
+    pronty.app
+  </text>
+</svg>
