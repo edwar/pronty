@@ -42,7 +42,7 @@ export function CreditPackages() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch("/api/admin/settings")
+      const response = await fetch("/api/admin/settings", { cache: "no-store" })
       const data = await response.json()
       setSettings({
         creditValue: data.credits?.creditValue ?? 1000,
