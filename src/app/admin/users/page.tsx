@@ -30,7 +30,6 @@ import {
   Bike,
   User as UserIcon,
   MoreHorizontal,
-  ChevronDown,
   Check,
 } from "lucide-react"
 import { Loading } from "@/components/ui/loading"

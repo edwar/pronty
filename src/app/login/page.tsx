@@ -33,7 +33,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const { data, error: signInError } = await signIn.email({
+      const { error: signInError } = await signIn.email({
         email: formData.email,
         password: formData.password,
         callbackURL: "/dashboard",

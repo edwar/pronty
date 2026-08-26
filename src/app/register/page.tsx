@@ -86,7 +86,7 @@ function RegisterForm() {
     setIsLoading(true)
 
     try {
-      const { data, error: signUpError } = await signUp.email({
+      const { error: signUpError } = await signUp.email({
         email: formData.email,
         password: formData.password,
         name: formData.ownerName,

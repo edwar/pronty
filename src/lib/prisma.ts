@@ -28,5 +28,3 @@ export const prisma = globalForPrisma.prisma ?? createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
-// Tipos útiles
-export type PrismaTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]

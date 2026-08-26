@@ -53,7 +53,6 @@ export function LocationPicker({
 
     // Dynamically import map components to avoid SSR issues with Leaflet
     const loadMap = async () => {
-      // @ts-expect-error - leaflet types work at runtime
       const L = await import("leaflet")
       await import("leaflet/dist/leaflet.css")
 
@@ -65,7 +64,6 @@ export function LocationPicker({
         shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
       })
 
-      // @ts-expect-error - react-leaflet types work at runtime
       const { MapContainer, TileLayer, Marker, useMapEvents } = await import("react-leaflet")
 
       function LocationMarker({ position }: { position: [number, number] | null }) {
@@ -87,7 +85,7 @@ export function LocationPicker({
       }
 
       function MapView() {
-        const center: [number, number] = lat && lng ? [lat, lng] : userLocation
+        const center: [number, number] = lat && lng ? [lat, lng] : userLocation!
 
         return (
           <MapContainer
