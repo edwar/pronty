@@ -84,11 +84,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "any" },
-    ],
-    apple: "/apple-touch-icon.png",
+    icon: `/favicon.svg?v=${Date.now()}`,
   },
   manifest: "/manifest.json",
   alternates: {
@@ -111,8 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className={`${dmSans.variable} ${geistMono.variable} h-full`}>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body className="min-h-full bg-background text-foreground antialiased">
         <TooltipProvider delay={0}>
