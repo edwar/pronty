@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PhoneInput } from "@/components/ui/phone-input"
+import { LocationPicker } from "@/components/ui/location-picker"
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle
@@ -442,29 +443,19 @@ export function BranchesSection() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="branchLat">Latitud</Label>
-                  <Input
-                    id="branchLat"
-                    type="number"
-                    step="any"
-                    value={formData.lat}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lat: e.target.value }))}
-                    placeholder="4.7110"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="branchLng">Longitud</Label>
-                  <Input
-                    id="branchLng"
-                    type="number"
-                    step="any"
-                    value={formData.lng}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lng: e.target.value }))}
-                    placeholder="-74.0721"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label>Ubicación en el mapa</Label>
+                <LocationPicker
+                  lat={formData.lat ? parseFloat(formData.lat) : null}
+                  lng={formData.lng ? parseFloat(formData.lng) : null}
+                  onLocationChange={(lat, lng) =>
+                    setFormData(prev => ({ ...prev, lat: lat.toString(), lng: lng.toString() }))
+                  }
+                  height="250px"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Haz clic en el mapa para establecer la ubicación de la sucursal
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
 

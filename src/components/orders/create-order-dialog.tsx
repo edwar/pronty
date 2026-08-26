@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { NumberInput } from "@/components/ui/number-input"
 import { PhoneInput } from "@/components/ui/phone-input"
+import { LocationPicker } from "@/components/ui/location-picker"
 import { Loader2, AlertCircle, MapPin, Calculator, Store } from "lucide-react"
 import { haversineDistance, calculateDeliveryFee, formatDistance } from "@/lib/distance"
 
@@ -362,41 +363,19 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
                   onChange={(e) => setDeliveryNotes(e.target.value)}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="deliveryLat">Latitud destino</Label>
-                  <Input
-                    id="deliveryLat"
-                    type="number"
-                    step="any"
-                    placeholder="4.7110"
-                    value={deliveryLat ?? ""}
-                    onChange={(e) => {
-                      const lat = e.target.value ? parseFloat(e.target.value) : null
-                      setDeliveryLat(lat)
-                      if (lat && deliveryLng) {
-                        handleDeliveryLocationChange(lat, deliveryLng)
-                      }
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="deliveryLng">Longitud destino</Label>
-                  <Input
-                    id="deliveryLng"
-                    type="number"
-                    step="any"
-                    placeholder="-74.0721"
-                    value={deliveryLng ?? ""}
-                    onChange={(e) => {
-                      const lng = e.target.value ? parseFloat(e.target.value) : null
-                      setDeliveryLng(lng)
-                      if (deliveryLat && lng) {
-                        handleDeliveryLocationChange(deliveryLat, lng)
-                      }
-                    }}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label>Ubicación de entrega en el mapa</Label>
+                <LocationPicker
+                  lat={deliveryLat}
+                  lng={deliveryLng}
+                  onLocationChange={(lat, lng) => handleDeliveryLocationChange(lat, lng)}
+                  height="200px"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  {deliveryLat && deliveryLng
+                    ? `📍 ${deliveryLat.toFixed(6)}, ${deliveryLng.toFixed(6)}`
+                    : "Haz clic en el mapa para ubicar el destino"}
+                </p>
               </div>
             </div>
 
