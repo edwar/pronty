@@ -1,14 +1,12 @@
 # Product
 
-<!-- impeccable:product-schema 1 -->
-
 ## Platform
 
 web
 
 ## Users
 
-Multi-usuario: Dueño de negocio (configura, administra, revisa métricas) + Empleados (operan diariamente, cargan pedidos, gestionan entregas). Ambos roles acceden al panel web desde cualquier dispositivo con navegador moderno.
+Multi-usuario: Dueño de negocio (configura, administra, revisa métricas) + Empleados (operan diariamente, cargan pedidos, gestionan entregas). Ambos roles acceden al panel web desde cualquier dispositivo con navegador moderno. Domiciliarios operan 100% por WhatsApp sin instalar apps.
 
 ## Product Purpose
 
@@ -23,55 +21,97 @@ A diferencia de WhatsApp informal (sin control, sin trazabilidad, caótico para 
 - Negocios con 5-100+ pedidos diarios (volumen variable)
 - Múltiples usuarios por comercio (dueño + empleados)
 - Domiciliarios que operan 100% por WhatsApp (sin app)
-- Pagos manuales (transferencia/efectivo) - el admin registra créditos
+- Pagos manuales o integrados (MercadoPago)
 - Municipios pequeños de Latinoamérica (Colombia, México, etc.)
 - Asignación directa a domiciliario específico O broadcast a grupo activo
 - Sistema de créditos prepago (1 crédito = 1 solicitud de domicilio)
 - Comisión opcional al domiciliario por cada carrera completada
+- Múltiples sucursales por negocio con horarios y tarifas propias
+- Cálculo automático de tarifa por distancia (Haversine)
 
-## Capabilities and Constraints
+## Capabilities
 
-### Core MVP (Fase 1)
-- Panel web multi-usuario (dueño configura, empleados operan)
-- Sistema de créditos prepago con paquetes
+### Panel de Comercio
+- Gestión multi-usuario (dueño + empleados)
 - Creación de pedidos con asignación directa o broadcast
-- Bot WhatsApp para domiciliarios (notificaciones, aceptar pedidos, ver estado, consultar saldo)
-- Tiempo real para estados de pedidos (SSE)
-- Gestión de domiciliarios con registro público y aprobación manual
+- Selección de sucursal de origen (auto-llenado de dirección y coordenadas)
+- Cálculo automático de tarifa por distancia
+- Estados en tiempo real vía Pusher
+- Monedero de créditos con historial
 - Dashboard con métricas y pedidos recientes
-- Historial de pedidos y transacciones
-- Admin Master: gestión global de comercios, domiciliarios, tarifas, créditos
+- Configuración de negocio (nombre, teléfono, WhatsApp)
+- Gestión de sucursales (dirección, coordenadas, horarios, prefijo)
+- Upload de imagen de perfil (Vercel Blob)
 
-### Constraints
-- Sin pasarela de pago integrada (pagos manuales)
+### Bot de WhatsApp para Domiciliarios
+- Registro público con email obligatorio
+- Activación vía email con link `wa.me` (el domiciliario envía el primer mensaje)
+- Sistema conversacional con estados persistidos en BD
+- Botones interactivos para aceptar/rechazar pedidos
+- Confirmación de recogida y entrega
+- Reporte de entrega fallida
+- Check-in periódico con mensajes de renovación
+- Expiración de conversación con advertencia previa
+- Monedero e historial de ganancias
+
+### Panel de Administración Master
+- Control global de comercios, domiciliarios y reportes
+- Aprobación manual de domiciliarios (envía email de activación)
+- Configuración de paquetes de créditos
+- Tarifas base y precio por km configurables
+- Integración con MercadoPago para pagos
+- Gestión de administradores del sistema
+- Configuración de WhatsApp Business API
+
+### Geolocalización
+- Coordenadas geográficas en comercios y sucursales
+- Coordenadas en pedidos (recogida y entrega)
+- Cálculo de distancia con fórmula de Haversine
+- Tarifa automática: Base + (km × Precio/km)
+- Links de Google Maps en mensajes de WhatsApp
+
+### Sucursales
+- Múltiples sucursales por negocio
+- Dirección, teléfono, ciudad, coordenadas por sucursal
+- Prefijo de pedidos personalizado (ej: NORTE-0001)
+- Horarios de atención por sucursal
+- Sucursal por defecto para pedidos rápidos
+
+## Constraints
+
 - Domiciliarios no instalan apps (todo por WhatsApp)
 - Multi-tenant desde inicio (múltiples comercios)
-- Un solo municipio/zona para MVP piloto
 - Hosting serverless (Vercel + Neon)
+- Base de datos: PostgreSQL (Neon)
+- Autenticación: better-auth
 
-## Brand Commitments
+## Tech Stack
 
-- Nombre: **Pronty**
-- Tono: Moderno, confiable, cercano ("del barrio pero profesional")
-- Geografía: Latinoamérica general
-- Sin nombre de dominio confirmado aún
+- **Framework:** Next.js 16 (App Router)
+- **Frontend:** React 19, Tailwind CSS, shadcn/ui
+- **Database:** Prisma ORM + Neon PostgreSQL
+- **Auth:** better-auth
+- **Email:** Resend
+- **WhatsApp:** Meta Cloud API
+- **Real-time:** Pusher
+- **Payments:** MercadoPago
+- **Storage:** Vercel Blob (imágenes de perfil)
 
-## Evidence on Hand
+## Database Models
 
-- No hay assets visuales existentes (proyecto nuevo)
-- Stack tecnológico confirmado: Next.js 16 + Prisma + Neon + better-auth
-- Proyectos de referencia del mismo desarrollador: atenea, meti, perseus (mismo stack)
+- **User** — Credenciales y roles (ADMIN_MASTER, COMMERCER, DRIVER)
+- **Commerce** — Negocio, créditos, datos de contacto
+- **Branch** — Sucursales con dirección, coords, horarios, prefijo
+- **Driver** — Domiciliario, estado, ciudad, conversación
+- **Order** — Pedido con origen (branch), destino, tarifa, distancia
+- **Transaction** — Historial financiero de créditos
+- **DriverEarning** — Comisiones ganadas por domiciliario
+- **DriverNotification** — Notificaciones a domiciliarios
+- **WhatsAppLog** — Logs de mensajes WhatsApp
+- **SystemConfig** — Configuración global de la plataforma
 
-## Product Principles
+## Brand
 
-1. **Simplicidad sobre complejidad** - Si WhatsApp funciona para el usuario, Pronty debe ser más fácil. La curva de aprendizaje debe ser mínima.
-2. **Velocidad** - Desde crear un pedido hasta que el domiciliario lo tome debe ser instantáneo. Cada segundo cuenta en delivery.
-3. **Transparencia** - Todo visible: estados del pedido, créditos disponibles, ganancias del domiciliario, historial completo.
-4. **Accesible** - Domiciliarios no instalan apps. Todo por WhatsApp con botones interactivos. El comercio carga pedidos desde cualquier navegador.
-5. **Profesional** - Hacer que un negocio pequeño se vea grande. Trazabilidad, reportes, gestión que competiría con plataformas grandes.
-
-## Accessibility & Inclusion
-
-- Responsive: funciona en desktop, tablet y móvil
-- Accesibilidad básica: contraste suficiente, navegación por teclado, labels en formularios
-- Multi-idioma potencial (español primario, portugués futuro)
+- **Nombre:** Pronty
+- **Tono:** Moderno, confiable, cercano ("del barrio pero profesional")
+- **Geografía:** Latinoamérica general
