@@ -1,0 +1,15 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://pronty.app/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /settings/
+Disallow: /credits/
+Disallow: /profile/
+Disallow: /dashboard/
+Disallow: /orders/
