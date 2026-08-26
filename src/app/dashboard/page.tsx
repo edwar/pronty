@@ -95,6 +95,10 @@ export default function DashboardPage() {
   const fetchMetrics = async () => {
     try {
       const response = await fetch("/api/commerce/metrics")
+      if (!response.ok) {
+        console.error("Metrics API error:", response.status)
+        return
+      }
       const result = await response.json()
       setData(result)
     } catch (err) {
