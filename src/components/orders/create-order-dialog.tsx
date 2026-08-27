@@ -41,6 +41,7 @@ interface Branch {
 interface DeliveryPricing {
   baseFee: number
   pricePerKm: number
+  baseKm: number
 }
 
 export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: CreateOrderDialogProps) {
@@ -58,7 +59,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   const [packageDescription, setPackageDescription] = useState("")
   const [fee, setFee] = useState(5000)
 
-  const [pricing, setPricing] = useState<DeliveryPricing>({ baseFee: 5000, pricePerKm: 1500 })
+  const [pricing, setPricing] = useState<DeliveryPricing>({ baseFee: 5000, pricePerKm: 150, baseKm: 2 })
   const [distance, setDistance] = useState<number | null>(null)
   const [deliveryLat, setDeliveryLat] = useState<number | null>(null)
   const [deliveryLng, setDeliveryLng] = useState<number | null>(null)
@@ -124,7 +125,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
         if (data.delivery) {
           setPricing({
             baseFee: data.delivery.baseFee || 5000,
-            pricePerKm: data.delivery.pricePerKm || 1500,
+            pricePerKm: data.delivery.pricePerKm || 150,
+            baseKm: data.delivery.baseKm || 0,
           })
           setFee(data.delivery.baseFee || 5000)
         }
@@ -156,7 +158,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
 
     const dist = haversineDistance(branchLat, branchLng, destLat, destLng)
     setDistance(dist)
-    const newFee = calculateDeliveryFee(dist, pricing.baseFee, pricing.pricePerKm)
+    const newFee = calculateDeliveryFee(dist, pricing.baseFee, pricing.pricePerKm, pricing.baseKm)
     setFee(newFee)
   }
 

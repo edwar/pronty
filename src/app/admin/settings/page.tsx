@@ -38,6 +38,7 @@ interface GlobalSettings {
   delivery: {
     baseFee: number
     pricePerKm: number
+    baseKm: number
   }
   whatsapp: {
     enabled: boolean
@@ -212,7 +213,20 @@ export default function AdminSettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="pricePerKm" className="text-xs">Por km ($)</Label>
+                  <Label htmlFor="baseKm" className="text-xs">Km incluidos</Label>
+                  <NumberInput
+                    id="baseKm"
+                    min={0}
+                    value={settings.delivery?.baseKm ?? 0}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, delivery: { ...prev.delivery, baseKm: v || 0 } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pricePerKm" className="text-xs">Por km extra ($)</Label>
                   <NumberInput
                     id="pricePerKm"
                     min={0}
@@ -226,7 +240,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div className="rounded-md bg-muted p-2">
                   <p className="text-[11px] text-muted-foreground">
-                    <strong>Fórmula:</strong> Base + (km × Precio/km)
+                    <strong>Fórmula:</strong> Base + max(0, km - Km incluidos) × Precio/km
                   </p>
                 </div>
               </CardContent>

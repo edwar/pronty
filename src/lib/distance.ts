@@ -26,9 +26,11 @@ function toRad(deg: number): number {
 export function calculateDeliveryFee(
   distanceKm: number,
   baseFee: number,
-  pricePerKm: number
+  pricePerKm: number,
+  baseKm: number = 0
 ): number {
-  return Math.round(baseFee + (distanceKm * pricePerKm))
+  const billableKm = Math.max(0, distanceKm - baseKm)
+  return Math.round(baseFee + (billableKm * pricePerKm))
 }
 
 export function formatDistance(km: number): string {

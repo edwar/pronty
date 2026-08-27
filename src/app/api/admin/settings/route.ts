@@ -12,7 +12,8 @@ const defaultGlobalSettings = {
   },
   delivery: {
     baseFee: 5000,
-    pricePerKm: 1500,
+    pricePerKm: 150,
+    baseKm: 2,
   },
   whatsapp: {
     enabled: false,
