@@ -52,7 +52,43 @@ export async function handleDriverMessage(phone: string, message: string) {
     return
   }
 
-  // Mensajes de texto simples son ignorados (los pedidos se gestionan por botones)
+  // Activar: "empece" / "activo" / "trabajar"
+  if (normalizedMessage === "empece" || normalizedMessage === "activo" || normalizedMessage === "trabajar") {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: {
+        isAvailable: true,
+        isActive: true,
+        conversationStage: "active",
+      },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `✅ ${driver.fullName}, estás activo y recibirás pedidos.`,
+    })
+    return
+  }
+
+  // Desactivar: "pare" / "inactivo" / "descanso"
+  if (normalizedMessage === "pare" || normalizedMessage === "inactivo" || normalizedMessage === "descanso") {
+    await prisma.driver.update({
+      where: { id: driver.id },
+      data: {
+        isAvailable: false,
+        isActive: false,
+        conversationStage: "inactive",
+      },
+    })
+
+    await sendWhatsAppMessage({
+      to: phone,
+      message: `Ok ${driver.fullName}, has sido desactivado. Cuando quieras volver a trabajar, envíame "Empece".`,
+    })
+    return
+  }
+
+  // Mensajes de texto no reconocidos son ignorados
   void normalizedMessage
 }
 

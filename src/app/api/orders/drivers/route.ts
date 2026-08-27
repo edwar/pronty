@@ -15,6 +15,7 @@ export async function GET(request: Request) {
     const drivers = await prisma.driver.findMany({
       where: {
         isApproved: true,
+        isActive: true,
         isAvailable: true,
       },
       select: {
