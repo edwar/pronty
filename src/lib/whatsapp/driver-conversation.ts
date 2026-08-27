@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { sendWhatsAppMessage, sendWhatsAppButtonMessage } from "./index"
+import { sendEmail, getDeliveryConfirmationEmail } from "@/lib/email"
 
 function normalizePhone(phone: string): string {
   return phone.replace(/[\s\-\(\)\+]/g, "")
@@ -19,19 +20,6 @@ async function findDriverByPhone(phone: string) {
   }) || null
 }
 
-async function getCheckInIntervalMinutes(): Promise<number> {
-  try {
-    const config = await prisma.systemConfig.findUnique({
-      where: { key: "global_settings" },
-    })
-    const settings = config?.value as Record<string, unknown>
-    const whatsapp = settings?.whatsapp as Record<string, unknown> | undefined
-    return (whatsapp?.checkInIntervalMinutes as number) || 1600
-  } catch {
-    return 1600
-  }
-}
-
 export async function handleDriverMessage(phone: string, message: string) {
   const driver = await findDriverByPhone(phone)
 
@@ -44,7 +32,6 @@ export async function handleDriverMessage(phone: string, message: string) {
   }
 
   const normalizedMessage = message.toLowerCase().trim()
-  const now = new Date()
 
   // Primera activación: needs_activation → active
   if (driver.conversationStage === "needs_activation") {
@@ -54,8 +41,6 @@ export async function handleDriverMessage(phone: string, message: string) {
         isAvailable: true,
         isActive: true,
         conversationStage: "active",
-        conversationStartedAt: now,
-        conversationLastActivity: now,
         totalConversations: { increment: 1 },
       },
     })
@@ -67,77 +52,8 @@ export async function handleDriverMessage(phone: string, message: string) {
     return
   }
 
-  // Actualizar última actividad
-  await prisma.driver.update({
-    where: { id: driver.id },
-    data: { conversationLastActivity: now },
-  })
-
-  // Si estaba en warning o expired, reiniciar conversación
-  if (driver.conversationStage === "warning" || driver.conversationStage === "expired") {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        conversationStage: "active",
-        conversationStartedAt: now,
-        isAvailable: true,
-        isActive: true,
-        totalConversations: { increment: 1 },
-      },
-    })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `¡Hola de nuevo ${driver.fullName}! ✅ Nueva conversación iniciada. Estás activo y recibirás pedidos.`,
-    })
-    return
-  }
-
-  // Check-in: sigo aquí
-  if (normalizedMessage === "sigo" || normalizedMessage === "sigo aquí" || normalizedMessage === "sigo trabajando") {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        isAvailable: true,
-        isActive: true,
-        conversationStage: "active",
-      },
-    })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `¡Perfecto ${driver.fullName}! Sigue recibiendo pedidos. ✅`,
-    })
-    return
-  }
-
-  // Check-out: ya no
-  if (normalizedMessage === "no" || normalizedMessage === "ya no" || normalizedMessage === "descanso") {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        isAvailable: false,
-        isActive: false,
-        conversationStage: "inactive",
-      },
-    })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `Ok ${driver.fullName}, has sido desactivado. Cuando quieras volver a trabajar, envíame "Hola".`,
-    })
-    return
-  }
-
-  // Texto no reconocido
-  await sendWhatsAppButtonMessage(
-    phone,
-    "No entendí tu mensaje. ¿Qué deseas hacer?",
-    [
-      { id: "activate", title: "Activarme" },
-      { id: "deactivate", title: "Desactivarme" },
-    ]
-  )
+  // Mensajes de texto simples son ignorados (los pedidos se gestionan por botones)
+  void normalizedMessage
 }
 
 export async function handleDriverButtonResponse(phone: string, buttonId: string) {
@@ -147,100 +63,6 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
 
   if (!driver) {
     console.log(`[WhatsApp] Driver not found for phone: ${phone}`)
-    return
-  }
-
-  const now = new Date()
-
-  // === ACTIVACIÓN / DESACTIVACIÓN ===
-  if (buttonId === "activate") {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        isAvailable: true,
-        isActive: true,
-        conversationStage: "active",
-        conversationStartedAt: driver.conversationStartedAt || now,
-        conversationLastActivity: now,
-        ...(driver.conversationStage === "needs_activation" ? { totalConversations: { increment: 1 } } : {}),
-      },
-    })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `¡Perfecto ${driver.fullName}! ✅ Estás activo y recibirás pedidos.`,
-    })
-    return
-  }
-
-  if (buttonId === "deactivate") {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        isAvailable: false,
-        isActive: false,
-        conversationStage: "inactive",
-      },
-    })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `Has sido desactivado. Cuando quieras volver a trabajar, envíame "Hola".`,
-    })
-    return
-  }
-
-  // === CHECK-IN ===
-  if (buttonId === "check_in") {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        isAvailable: true,
-        isActive: true,
-        conversationStage: "active",
-        conversationLastActivity: now,
-      },
-    })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `¡Perfecto ${driver.fullName}! ✅ Sigue recibiendo pedidos.`,
-    })
-    return
-  }
-
-  if (buttonId === "check_out") {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        isAvailable: false,
-        isActive: false,
-        conversationStage: "inactive",
-      },
-    })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `Has sido desactivado. Descansa bien.`,
-    })
-    return
-  }
-
-  // === RENOVAR SESIÓN ===
-  if (buttonId === "renew_session") {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        conversationStage: "active",
-        conversationStartedAt: now,
-        conversationLastActivity: now,
-      },
-    })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `¡Sesión renovada! ✅ Sigue recibiendo pedidos.`,
-    })
     return
   }
 
@@ -431,10 +253,35 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
       },
     })
 
+    // Enviar WhatsApp de confirmación (servicio, no consume ventana)
     await sendWhatsAppMessage({
       to: phone,
-      message: `✅ ¡Pedido #${order.orderNumber} entregado con éxito!\n\n💰 Tu ganancia: $${netEarning.toLocaleString("es-CO")}\n\nGracias por trabajar con Pronty.`,
+      message: `✅ Pedido #${order.orderNumber} entregado con éxito.\n\nGracias por trabajar con Pronty.`,
     })
+
+    // Enviar email de cierre con resumen de ganancias
+    const driverUser = await prisma.user.findUnique({
+      where: { id: driver.userId },
+    })
+
+    if (driverUser?.email) {
+      const emailHtml = getDeliveryConfirmationEmail({
+        driverName: driver.fullName,
+        orderNumber: order.orderNumber,
+        baseFee: Number(order.baseFee),
+        commission,
+        netEarning,
+        pickupAddress: order.pickupAddress,
+        deliveryAddress: order.deliveryAddress,
+        deliveredAt: new Date(),
+      })
+
+      await sendEmail({
+        to: driverUser.email,
+        subject: `¡Pedido #${order.orderNumber} entregado! Resumen de ganancia`,
+        html: emailHtml,
+      })
+    }
 
     console.log(`[WhatsApp] Order ${order.orderNumber} delivered by ${driver.fullName}`)
     return
@@ -489,106 +336,36 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
 
     await sendWhatsAppMessage({
       to: phone,
-      message: `📦 Pedido #${order.orderNumber} marcado como "No entregado"\n\n💰 Tu ganancia: $${netEarning.toLocaleString("es-CO")}\n\nEl comercio será notificado.`,
+      message: `📦 Pedido #${order.orderNumber} marcado como "No entregado". El comercio será notificado.`,
     })
+
+    // Enviar email de cierre con resumen de ganancias
+    const driverUser = await prisma.user.findUnique({
+      where: { id: driver.userId },
+    })
+
+    if (driverUser?.email) {
+      const emailHtml = getDeliveryConfirmationEmail({
+        driverName: driver.fullName,
+        orderNumber: order.orderNumber,
+        baseFee: Number(order.baseFee),
+        commission,
+        netEarning,
+        pickupAddress: order.pickupAddress,
+        deliveryAddress: order.deliveryAddress,
+        deliveredAt: new Date(),
+      })
+
+      await sendEmail({
+        to: driverUser.email,
+        subject: `Pedido #${order.orderNumber} - Entrega no completada`,
+        html: emailHtml,
+      })
+    }
 
     console.log(`[WhatsApp] Order ${order.orderNumber} delivery failed by ${driver.fullName}`)
     return
   }
 
   console.log(`[WhatsApp] Unknown button: ${buttonId}`)
-}
-
-export async function sendCheckInMessages() {
-  const intervalMinutes = await getCheckInIntervalMinutes()
-  const warningMinutes = Math.max(intervalMinutes * 1.5, 60)
-  const threshold = new Date(Date.now() - intervalMinutes * 60 * 1000)
-  const warningThreshold = new Date(Date.now() - warningMinutes * 60 * 1000)
-
-  // Buscar drivers activos que necesiten check-in
-  const activeDrivers = await prisma.driver.findMany({
-    where: {
-      conversationStage: "active",
-      isActive: true,
-      conversationLastActivity: { lt: threshold },
-    },
-    include: { user: true },
-  })
-
-  for (const driver of activeDrivers) {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: { conversationStage: "waiting_renewal" },
-    })
-
-    await sendWhatsAppButtonMessage(
-      driver.phone,
-      `¿Sigues trabajando, ${driver.fullName}? Confirma para seguir recibiendo pedidos.`,
-      [
-        { id: "check_in", title: "Sigo aquí" },
-        { id: "check_out", title: "Ya no" },
-      ]
-    )
-  }
-
-  // Buscar drivers en waiting_renewal que necesiten advertencia
-  const renewalDrivers = await prisma.driver.findMany({
-    where: {
-      conversationStage: "waiting_renewal",
-      isActive: true,
-      conversationLastActivity: { lt: warningThreshold },
-    },
-    include: { user: true },
-  })
-
-  for (const driver of renewalDrivers) {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: { conversationStage: "warning" },
-    })
-
-    await sendWhatsAppButtonMessage(
-      driver.phone,
-      `⚠️ ${driver.fullName}, tu sesión está por expirar. Si no la renuevas, deberás iniciar una nueva conversación.`,
-      [
-        { id: "renew_session", title: "Renovar sesión" },
-        { id: "check_out", title: "Descansar" },
-      ]
-    )
-  }
-
-  // Buscar drivers en warning que hayan expirado (2x el intervalo)
-  const expiredThreshold = new Date(Date.now() - intervalMinutes * 2 * 60 * 1000)
-  const expiredDrivers = await prisma.driver.findMany({
-    where: {
-      conversationStage: "warning",
-      isActive: true,
-      conversationLastActivity: { lt: expiredThreshold },
-    },
-  })
-
-  for (const driver of expiredDrivers) {
-    await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        conversationStage: "expired",
-        isActive: false,
-        isAvailable: false,
-      },
-    })
-
-    await sendWhatsAppMessage({
-      to: driver.phone,
-      message: `Tu sesión ha expirado. Para volver a trabajar, envía cualquier mensaje y se iniciará una nueva conversación.`,
-    })
-  }
-}
-
-export function getActiveDriversCount() {
-  return prisma.driver.count({
-    where: {
-      isActive: true,
-      conversationStage: "active",
-    },
-  })
 }

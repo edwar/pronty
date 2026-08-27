@@ -8,7 +8,6 @@ const defaultGlobalSettings = {
   },
   orders: {
     directAssignmentTimeout: 5,
-    broadcastTimeout: 3,
     orderExpiryMinutes: 30,
   },
   delivery: {
@@ -20,7 +19,6 @@ const defaultGlobalSettings = {
     phoneNumberId: "",
     accessToken: "",
     businessPhone: "",
-    checkInIntervalMinutes: 1600,
   },
   credits: {
     lowCreditsThreshold: 5,

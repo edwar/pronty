@@ -33,7 +33,6 @@ interface GlobalSettings {
   }
   orders: {
     directAssignmentTimeout: number
-    broadcastTimeout: number
     orderExpiryMinutes: number
   }
   delivery: {
@@ -45,7 +44,6 @@ interface GlobalSettings {
     phoneNumberId: string
     accessToken: string
     businessPhone: string
-    checkInIntervalMinutes: number
   }
   credits: {
     lowCreditsThreshold: number
@@ -176,19 +174,6 @@ export default function AdminSettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="broadcastTimeout" className="text-xs">Broadcast (min)</Label>
-                  <NumberInput
-                    id="broadcastTimeout"
-                    min={1}
-                    value={settings.orders.broadcastTimeout}
-                    onValueChange={(v) =>
-                      setSettings((prev) =>
-                        prev ? { ...prev, orders: { ...prev.orders, broadcastTimeout: v || 1 } } : prev
-                      )
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
                   <Label htmlFor="orderExpiryMinutes" className="text-xs">Expiración (min)</Label>
                   <NumberInput
                     id="orderExpiryMinutes"
@@ -242,35 +227,6 @@ export default function AdminSettingsPage() {
                 <div className="rounded-md bg-muted p-2">
                   <p className="text-[11px] text-muted-foreground">
                     <strong>Fórmula:</strong> Base + (km × Precio/km)
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Check-in - ultra compacto */}
-            <Card className="border-border/60">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <MessageCircle className="h-4 w-4 text-blue-500" />
-                  Check-in
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2">
-                  <Label htmlFor="checkInInterval" className="text-xs">Intervalo (min)</Label>
-                  <NumberInput
-                    id="checkInInterval"
-                    min={5}
-                    max={1440}
-                    value={settings.whatsapp.checkInIntervalMinutes}
-                    onValueChange={(v) =>
-                      setSettings((prev) =>
-                        prev ? { ...prev, whatsapp: { ...prev.whatsapp, checkInIntervalMinutes: v || 30 } } : prev
-                      )
-                    }
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    Mensajes de confirmación a domiciliarios
                   </p>
                 </div>
               </CardContent>

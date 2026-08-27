@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { sendWhatsAppButtonMessage } from "@/lib/whatsapp"
+import { sendWhatsAppTemplateMessage } from "@/lib/whatsapp"
 
 export async function GET(request: Request) {
   try {
@@ -133,7 +133,6 @@ export async function POST(request: Request) {
       packageDescription,
       totalFee,
       distanceKm,
-      assignmentType = "DIRECT",
       driverId,
     } = body
 
@@ -167,12 +166,7 @@ export async function POST(request: Request) {
     })
     const orderNumber = `${orderPrefix}-${String(prefixCount + 1).padStart(4, "0")}`
 
-    const initialStatus =
-      assignmentType === "DIRECT" && driverId
-        ? "ASSIGNING_DIRECT"
-        : assignmentType === "BROADCAST"
-        ? "ASSIGNING_BROADCAST"
-        : "PENDING"
+    const initialStatus = driverId ? "ASSIGNING_DIRECT" : "PENDING"
 
     // Deduct 1 credit and create order in a transaction
     const [order] = await prisma.$transaction([
@@ -194,7 +188,7 @@ export async function POST(request: Request) {
           recipientPhone,
           packageDescription: packageDescription || null,
           status: initialStatus as any,
-          assignmentType: assignmentType as any,
+          assignmentType: "DIRECT",
           baseFee: numericFee,
           totalFee: numericFee,
           distanceKm: distanceKm ? parseFloat(distanceKm) : null,
@@ -235,23 +229,32 @@ export async function POST(request: Request) {
       }),
     ])
 
-    // Send WhatsApp notification if direct driver assignment is selected
+    // Send WhatsApp template message (Message 1 - Utility) to assigned driver
     if (driverId && initialStatus === "ASSIGNING_DIRECT") {
       const driver = await prisma.driver.findUnique({
         where: { id: driverId },
       })
       if (driver?.phone) {
-        const deliveryMapLink = deliveryLat && deliveryLng
-          ? `\n🗺️ Ubicación: https://www.google.com/maps?q=${deliveryLat},${deliveryLng}`
-          : ""
-        sendWhatsAppButtonMessage(
+        const feeFormatted = `$${numericFee.toLocaleString("es-CO")}`
+        const distanceText = distanceKm ? `${Number(distanceKm).toFixed(1)} km` : "N/A"
+
+        sendWhatsAppTemplateMessage(
           driver.phone,
-          `¡Nuevo pedido #${orderNumber} de ${commerce.name}!\n\n📍 Recogida: ${pickupAddress}\n🏠 Entrega: ${deliveryAddress}${deliveryMapLink}\n💰 Tarifa: $${numericFee.toLocaleString("es-CO")}${distanceKm ? `\n📏 Distancia: ${Number(distanceKm).toFixed(1)} km` : ""}`,
+          "new_order_notification",
+          "es",
           [
-            { id: `accept_${order.id}`, title: "Aceptar Pedido" },
-            { id: `decline_${order.id}`, title: "Rechazar" },
+            { type: "text", text: orderNumber },
+            { type: "text", text: commerce.name },
+            { type: "text", text: pickupAddress },
+            { type: "text", text: deliveryAddress },
+            { type: "text", text: feeFormatted },
+            { type: "text", text: distanceText },
+          ],
+          [
+            { type: "quick_reply", index: 0, parameters: [{ type: "payload", payload: `accept_${order.id}` }] },
+            { type: "quick_reply", index: 1, parameters: [{ type: "payload", payload: `decline_${order.id}` }] },
           ]
-        ).catch((e) => console.error("WhatsApp notification error:", e))
+        ).catch((e) => console.error("WhatsApp template error:", e))
       }
     }
 

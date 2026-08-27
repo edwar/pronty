@@ -9,11 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { NumberInput } from "@/components/ui/number-input"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { LocationPicker } from "@/components/ui/location-picker"
-import { Loader2, AlertCircle, MapPin, Calculator, Store } from "lucide-react"
+import { Loader2, AlertCircle, Calculator, Store } from "lucide-react"
 import { haversineDistance, calculateDeliveryFee, formatDistance } from "@/lib/distance"
 
 interface CreateOrderDialogProps {
@@ -45,7 +44,6 @@ interface DeliveryPricing {
 }
 
 export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: CreateOrderDialogProps) {
-  const [assignmentType, setAssignmentType] = useState<"DIRECT" | "BROADCAST">("DIRECT")
   const [driverId, setDriverId] = useState<string>("")
   const [drivers, setDrivers] = useState<Driver[]>([])
   const [branches, setBranches] = useState<Branch[]>([])
@@ -183,8 +181,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
       return
     }
 
-    if (assignmentType === "DIRECT" && !driverId) {
-      setError("Por favor selecciona un domiciliario para la asignación directa")
+    if (!driverId) {
+      setError("Por favor selecciona un domiciliario")
       return
     }
 
@@ -211,8 +209,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
           packageDescription,
           totalFee: fee,
           distanceKm: distance,
-          assignmentType,
-          driverId: assignmentType === "DIRECT" ? driverId : null,
+          assignmentType: "DIRECT",
+          driverId,
         }),
       })
 
@@ -413,51 +411,28 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Asignación</h4>
-              <RadioGroup
-                value={assignmentType}
-                onValueChange={(v) => setAssignmentType(v as "DIRECT" | "BROADCAST")}
-                className="grid grid-cols-2 gap-3"
-              >
-                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border/60 p-3 transition-colors hover:bg-muted/50 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5">
-                  <RadioGroupItem value="DIRECT" id="direct" />
-                  <div>
-                    <div className="text-sm font-medium">Directa</div>
-                    <div className="text-[11px] text-muted-foreground">A un domiciliario específico</div>
-                  </div>
-                </label>
-                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border/60 p-3 transition-colors hover:bg-muted/50 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5">
-                  <RadioGroupItem value="BROADCAST" id="broadcast" />
-                  <div>
-                    <div className="text-sm font-medium">Broadcast</div>
-                    <div className="text-[11px] text-muted-foreground">Oferta a todo el grupo activo</div>
-                  </div>
-                </label>
-              </RadioGroup>
-
-              {assignmentType === "DIRECT" && (
-                <div className="space-y-2">
-                  <Label>Domiciliario *</Label>
-                  <Select value={driverId} onValueChange={(v) => setDriverId(v || "")}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar domiciliario activo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {drivers.length === 0 ? (
-                        <SelectItem value="none" disabled>
-                          No hay domiciliarios activos en este momento
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Domiciliario</h4>
+              <div className="space-y-2">
+                <Label>Domiciliario *</Label>
+                <Select value={driverId} onValueChange={(v) => setDriverId(v || "")}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar domiciliario activo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {drivers.length === 0 ? (
+                      <SelectItem value="none" disabled>
+                        No hay domiciliarios activos en este momento
+                      </SelectItem>
+                    ) : (
+                      drivers.map((drv) => (
+                        <SelectItem key={drv.id} value={drv.id}>
+                          {drv.fullName} — {drv.vehicleType}
                         </SelectItem>
-                      ) : (
-                        drivers.map((drv) => (
-                          <SelectItem key={drv.id} value={drv.id}>
-                            {drv.fullName} — {drv.vehicleType}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
           </form>
