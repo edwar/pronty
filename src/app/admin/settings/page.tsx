@@ -152,101 +152,7 @@ export default function AdminSettingsPage() {
           <Loading text="Cargando configuración..." className="py-16" />
         ) : settings ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-min">
-            {/* Pedidos - compacto */}
-            <Card className="border-border/60">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Package className="h-4 w-4 text-success" />
-                  Pedidos
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 pt-0">
-                <div className="space-y-2">
-                  <Label htmlFor="directAssignmentTimeout" className="text-xs">Asignación directa (min)</Label>
-                  <NumberInput
-                    id="directAssignmentTimeout"
-                    min={1}
-                    value={settings.orders.directAssignmentTimeout}
-                    onValueChange={(v) =>
-                      setSettings((prev) =>
-                        prev ? { ...prev, orders: { ...prev.orders, directAssignmentTimeout: v || 1 } } : prev
-                      )
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="orderExpiryMinutes" className="text-xs">Expiración (min)</Label>
-                  <NumberInput
-                    id="orderExpiryMinutes"
-                    min={5}
-                    value={settings.orders.orderExpiryMinutes}
-                    onValueChange={(v) =>
-                      setSettings((prev) =>
-                        prev ? { ...prev, orders: { ...prev.orders, orderExpiryMinutes: v || 5 } } : prev
-                      )
-                    }
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tarifas - compacto */}
-            <Card className="border-border/60">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-warning" />
-                  Tarifas
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 pt-0">
-                <div className="space-y-2">
-                  <Label htmlFor="baseFee" className="text-xs">Base ($)</Label>
-                  <NumberInput
-                    id="baseFee"
-                    min={0}
-                    value={settings.delivery?.baseFee ?? 5000}
-                    onValueChange={(v) =>
-                      setSettings((prev) =>
-                        prev ? { ...prev, delivery: { ...prev.delivery, baseFee: v || 0 } } : prev
-                      )
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="baseKm" className="text-xs">Km incluidos</Label>
-                  <NumberInput
-                    id="baseKm"
-                    min={0}
-                    value={settings.delivery?.baseKm ?? 0}
-                    onValueChange={(v) =>
-                      setSettings((prev) =>
-                        prev ? { ...prev, delivery: { ...prev.delivery, baseKm: v || 0 } } : prev
-                      )
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pricePerKm" className="text-xs">Por km extra ($)</Label>
-                  <NumberInput
-                    id="pricePerKm"
-                    min={0}
-                    value={settings.delivery?.pricePerKm ?? 1500}
-                    onValueChange={(v) =>
-                      setSettings((prev) =>
-                        prev ? { ...prev, delivery: { ...prev.delivery, pricePerKm: v || 0 } } : prev
-                      )
-                    }
-                  />
-                </div>
-                <div className="rounded-md bg-muted p-2">
-                  <p className="text-[11px] text-muted-foreground">
-                    <strong>Fórmula:</strong> Base + max(0, km - Km incluidos) × Precio/km
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* WhatsApp - más ancho */}
+            {/* WhatsApp Business - más ancho */}
             <Card className="border-border/60 md:col-span-2 lg:col-span-2">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm">
@@ -327,6 +233,100 @@ export default function AdminSettingsPage() {
                   <Info className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
                   <p className="text-[11px] text-muted-foreground">
                     Las credenciales se almacenan de forma segura en la base de datos.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pedidos */}
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Package className="h-4 w-4 text-success" />
+                  Pedidos
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                <div className="space-y-2">
+                  <Label htmlFor="directAssignmentTimeout" className="text-xs">Asignación directa (min)</Label>
+                  <NumberInput
+                    id="directAssignmentTimeout"
+                    min={1}
+                    value={settings.orders.directAssignmentTimeout}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, orders: { ...prev.orders, directAssignmentTimeout: v || 1 } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="orderExpiryMinutes" className="text-xs">Expiración (min)</Label>
+                  <NumberInput
+                    id="orderExpiryMinutes"
+                    min={5}
+                    value={settings.orders.orderExpiryMinutes}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, orders: { ...prev.orders, orderExpiryMinutes: v || 5 } } : prev
+                      )
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tarifas */}
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-warning" />
+                  Tarifas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                <div className="space-y-2">
+                  <Label htmlFor="baseFee" className="text-xs">Base ($)</Label>
+                  <NumberInput
+                    id="baseFee"
+                    min={0}
+                    value={settings.delivery?.baseFee ?? 5000}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, delivery: { ...prev.delivery, baseFee: v || 0 } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="baseKm" className="text-xs">Km incluidos</Label>
+                  <NumberInput
+                    id="baseKm"
+                    min={0}
+                    value={settings.delivery?.baseKm ?? 0}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, delivery: { ...prev.delivery, baseKm: v || 0 } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pricePerKm" className="text-xs">Por km extra ($)</Label>
+                  <NumberInput
+                    id="pricePerKm"
+                    min={0}
+                    value={settings.delivery?.pricePerKm ?? 1500}
+                    onValueChange={(v) =>
+                      setSettings((prev) =>
+                        prev ? { ...prev, delivery: { ...prev.delivery, pricePerKm: v || 0 } } : prev
+                      )
+                    }
+                  />
+                </div>
+                <div className="rounded-md bg-muted p-2">
+                  <p className="text-[11px] text-muted-foreground">
+                    <strong>Fórmula:</strong> Base + max(0, km - Km incluidos) × Precio/km
                   </p>
                 </div>
               </CardContent>

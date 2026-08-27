@@ -38,17 +38,13 @@ export function NumberInput({ value, onValueChange, ...props }: NumberInputProps
       inputMode="numeric"
       value={display}
       onFocus={(e) => {
-        const raw = parseFormattedNumber(display)
-        setDisplay(String(raw))
         e.target.select()
-      }}
-      onBlur={(e) => {
-        setDisplay(formatNumber(parseFormattedNumber(e.target.value)))
       }}
       onChange={(e) => {
         const cleaned = e.target.value.replace(/[^\d]/g, "").replace(/^0+(?=\d)/, "")
-        setDisplay(cleaned || "0")
-        onValueChange(Number(cleaned) || 0)
+        const num = Number(cleaned) || 0
+        setDisplay(formatNumber(num))
+        onValueChange(num)
       }}
     />
   )
