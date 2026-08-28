@@ -224,7 +224,7 @@ export default function AdminDriversPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem 
                               onClick={() => {
-                                const url = `${window.location.origin}/drivers/status?phone=${driver.phone}&name=${encodeURIComponent(driver.fullName)}`
+                                const url = `${window.location.origin}/drivers/status?name=${encodeURIComponent(driver.fullName)}`
                                 navigator.clipboard.writeText(url)
                               }}
                             >
