@@ -25,7 +25,8 @@ import {
   MoreHorizontal, 
   UserCheck, 
   UserX,
-  Clock
+  Clock,
+  Link2
 } from "lucide-react"
 import { Loading } from "@/components/ui/loading"
 import { useUser } from "@/hooks/use-user"
@@ -221,6 +222,15 @@ export default function AdminDriversPage() {
                             <MoreHorizontal className="h-4 w-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                const url = `${window.location.origin}/drivers/status?phone=${driver.phone}&name=${encodeURIComponent(driver.fullName)}`
+                                navigator.clipboard.writeText(url)
+                              }}
+                            >
+                              <Link2 className="mr-2 h-4 w-4" />
+                              Copiar link de estado
+                            </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleToggleActive(driver.id, driver.isActive)}
                             >
