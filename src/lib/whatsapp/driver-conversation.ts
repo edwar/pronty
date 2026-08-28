@@ -24,10 +24,6 @@ export async function handleDriverMessage(phone: string, message: string) {
   const driver = await findDriverByPhone(phone)
 
   if (!driver) {
-    await sendWhatsAppMessage({
-      to: phone,
-      message: "Hola, no estás registrado como domiciliario en Pronty.",
-    })
     return
   }
 
@@ -36,10 +32,6 @@ export async function handleDriverMessage(phone: string, message: string) {
   // Primera activación: needs_activation → active
   if (driver.conversationStage === "needs_activation") {
     if (!driver.isApproved) {
-      await sendWhatsAppMessage({
-        to: phone,
-        message: `Hola ${driver.fullName}, tu cuenta está pendiente de aprobación por el administrador. Recibirás un mensaje cuando sea aprobada.`,
-      })
       return
     }
 
@@ -53,20 +45,42 @@ export async function handleDriverMessage(phone: string, message: string) {
       },
     })
 
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `¡Bienvenido ${driver.fullName}! ✅ Tu cuenta está activa y lista para recibir pedidos.\n\nCada vez que recibas un pedido, te llegará por aquí. ¡Éxito!`,
-    })
+    // Enviar email de confirmación de activación
+    if (driver.user?.email) {
+      await sendEmail({
+        to: driver.user.email,
+        subject: "¡Tu cuenta de Pronty está activa!",
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head><meta charset="utf-8"></head>
+            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); border-radius: 12px; padding: 40px; text-align: center; margin-bottom: 30px;">
+                <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Pronty</h1>
+                <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 14px;">Delivery Profesional</p>
+              </div>
+              <div style="background: #f8fafc; border-radius: 12px; padding: 32px; margin-bottom: 30px;">
+                <h2 style="margin: 0 0 16px; font-size: 20px; color: #1e293b;">¡Hola ${driver.fullName}! ✅</h2>
+                <p style="margin: 0 0 24px; color: #64748b; font-size: 15px;">
+                  Tu cuenta de domiciliario está activa y lista para recibir pedidos.
+                </p>
+                <p style="margin: 0; color: #64748b; font-size: 14px;">
+                  Cada vez que recibas un pedido, te llegará por WhatsApp. ¡Éxito!
+                </p>
+              </div>
+              <p style="text-align: center; color: #94a3b8; font-size: 12px;">© 2026 Pronty.</p>
+            </body>
+          </html>
+        `,
+      })
+    }
+
     return
   }
 
   // Activar: "empece" / "activo" / "trabajar"
   if (normalizedMessage === "empece" || normalizedMessage === "activo" || normalizedMessage === "trabajar") {
     if (!driver.isApproved) {
-      await sendWhatsAppMessage({
-        to: phone,
-        message: `Hola ${driver.fullName}, tu cuenta está pendiente de aprobación por el administrador.`,
-      })
       return
     }
 
