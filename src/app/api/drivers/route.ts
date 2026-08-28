@@ -42,15 +42,26 @@ export async function POST(request: Request) {
       )
     }
 
-    const user = await prisma.user.create({
-      data: {
-        email: email.toLowerCase().trim(),
-        name: fullName,
-        phone,
-        role: "DRIVER",
-        emailVerified: false,
-      },
+    const normalizedEmail = email.toLowerCase().trim()
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
     })
+
+    let user
+    if (existingUser) {
+      user = existingUser
+    } else {
+      user = await prisma.user.create({
+        data: {
+          email: normalizedEmail,
+          name: fullName,
+          phone,
+          role: "DRIVER",
+          emailVerified: false,
+        },
+      })
+    }
 
     const driver = await prisma.driver.create({
       data: {
