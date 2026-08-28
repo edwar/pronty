@@ -62,11 +62,6 @@ export async function handleDriverMessage(phone: string, message: string) {
         conversationStage: "active",
       },
     })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `✅ ${driver.fullName}, estás activo y recibirás pedidos.`,
-    })
     return
   }
 
@@ -79,11 +74,6 @@ export async function handleDriverMessage(phone: string, message: string) {
         isActive: false,
         conversationStage: "inactive",
       },
-    })
-
-    await sendWhatsAppMessage({
-      to: phone,
-      message: `Ok ${driver.fullName}, has sido desactivado. Cuando quieras volver a trabajar, envíame "Empece".`,
     })
     return
   }
