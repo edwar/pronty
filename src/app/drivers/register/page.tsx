@@ -95,7 +95,10 @@ export default function DriverRegisterPage() {
                 Tu solicitud ha sido recibida. Recibirás un mensaje de WhatsApp
                 cuando tu cuenta sea aprobada.
               </p>
-              <Button><Link href="/">Volver al Inicio</Link></Button>
+              <div className="flex gap-3">
+                <Button variant="outline"><Link href="/">Volver al Inicio</Link></Button>
+                <Button><Link href="/drivers/status">Mi Estado</Link></Button>
+              </div>
             </div>
           </CardContent>
         </Card>

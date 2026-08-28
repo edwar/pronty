@@ -107,6 +107,9 @@ export default function HomePage() {
             <Link href="/login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Iniciar Sesión
             </Link>
+            <Link href="/drivers/status" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              Mi Estado
+            </Link>
             <Button size="sm">
               <Link href="/drivers/register">Ser Domiciliario</Link>
             </Button>
