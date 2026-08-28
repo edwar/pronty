@@ -2,9 +2,10 @@
 
 import { useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Play, Square, MessageCircle } from "lucide-react"
+import { Play, Square, MessageCircle, ArrowLeft } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 
 function DriverStatusContent() {
@@ -32,6 +33,11 @@ function DriverStatusContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+          <ArrowLeft className="h-4 w-4" />
+          Volver al inicio
+        </Link>
+
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500 text-white mb-2">
             <MessageCircle className="h-8 w-8" />
