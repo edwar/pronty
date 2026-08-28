@@ -43,7 +43,7 @@ export default function DriverRegisterPage() {
     "Gachalá", "Ubalá", "Gachetá",
     "Ubaté", "Fúquene", "Tausa", "Sutatausa", "Carmen de Carupa",
     "Anapoima", "Apaneca", "Apulo", "La Mesa", "Tena",
-    "Viotá", "Cachipay", "Tocaima", "Agua de Dios",
+    "Viotá", "Cachipay",
   ]
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
