@@ -97,7 +97,7 @@ export default function DriverRegisterPage() {
               </p>
               <div className="flex gap-3">
                 <Button variant="outline"><Link href="/">Volver al Inicio</Link></Button>
-                <Button><Link href="/drivers/status">Mi Estado</Link></Button>
+                <Button><Link href="/drivers/status">Soy Domiciliario</Link></Button>
               </div>
             </div>
           </CardContent>
