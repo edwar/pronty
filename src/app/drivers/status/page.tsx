@@ -3,10 +3,11 @@
 import { useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Play, Square, MessageCircle, ArrowLeft } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Play, Square, MessageCircle } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
+import { Logo } from "@/components/logo"
 
 function DriverStatusContent() {
   const searchParams = useSearchParams()
@@ -31,66 +32,70 @@ function DriverStatusContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-          Volver al inicio
-        </Link>
-
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500 text-white mb-2">
-            <MessageCircle className="h-8 w-8" />
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Nav */}
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+        <div className="container mx-auto flex h-16 items-center justify-between px-6">
+          <Link href="/">
+            <Logo className="h-9 w-9" />
+          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              Iniciar Sesión
+            </Link>
+            <Button size="sm">
+              <Link href="/drivers/register">Ser Domiciliario</Link>
+            </Button>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Pronty</h1>
-          <p className="text-sm text-gray-500">Estado de disponibilidad</p>
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="container mx-auto max-w-lg px-6 py-16">
+        <div className="mb-8 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/8 px-3.5 py-1 text-xs font-medium text-primary">
+            <MessageCircle className="h-3.5 w-3.5" />
+            Domiciliario
+          </div>
+          <h1 className="mb-2 text-3xl font-bold tracking-tight">Estado de disponibilidad</h1>
+          <p className="text-sm text-muted-foreground">Activa o desactiva tu cuenta para recibir pedidos</p>
         </div>
 
-        {name && (
-          <Card className="border-border/60">
-            <CardContent className="pt-6 pb-4 text-center">
-              <p className="text-xs text-muted-foreground mb-1">Domiciliario</p>
-              <p className="text-lg font-semibold">{name}</p>
-            </CardContent>
-          </Card>
-        )}
+        <Card className="border-border/60 shadow-sm mb-6">
+          <CardContent className="pt-6 pb-4 text-center">
+            <p className="text-xs text-muted-foreground mb-1">Domiciliario</p>
+            <p className="text-lg font-semibold">{name}</p>
+          </CardContent>
+        </Card>
 
-        <div className="space-y-3">
-          <Card className="border-border/60 hover:border-green-500/50 transition-colors">
-            <CardContent className="pt-6">
-              <Button
-                className="w-full h-16 text-base font-semibold bg-green-500 hover:bg-green-600 text-white"
-                onClick={() => openWhatsApp("Empece")}
-              >
-                <Play className="h-5 w-5 mr-2" />
-                Empezar a trabajar
-              </Button>
-              <p className="text-xs text-muted-foreground text-center mt-3">
-                Te activamos para recibir pedidos por WhatsApp
-              </p>
-            </CardContent>
-          </Card>
+        <div className="space-y-4">
+          <Button
+            className="w-full h-14 text-base font-semibold bg-green-500 hover:bg-green-600 text-white"
+            onClick={() => openWhatsApp("Empece")}
+          >
+            <Play className="h-5 w-5 mr-2" />
+            Empezar a trabajar
+          </Button>
+          <p className="text-xs text-muted-foreground text-center -mt-2">
+            Te activamos para recibir pedidos por WhatsApp
+          </p>
 
-          <Card className="border-border/60 hover:border-red-500/50 transition-colors">
-            <CardContent className="pt-6">
-              <Button
-                className="w-full h-16 text-base font-semibold bg-red-500 hover:bg-red-600 text-white"
-                onClick={() => openWhatsApp("Pare")}
-              >
-                <Square className="h-5 w-5 mr-2" />
-                Dejar de trabajar
-              </Button>
-              <p className="text-xs text-muted-foreground text-center mt-3">
-                Te desactivamos y no recibirás más pedidos
-              </p>
-            </CardContent>
-          </Card>
+          <Button
+            className="w-full h-14 text-base font-semibold bg-red-500 hover:bg-red-600 text-white"
+            onClick={() => openWhatsApp("Pare")}
+          >
+            <Square className="h-5 w-5 mr-2" />
+            Dejar de trabajar
+          </Button>
+          <p className="text-xs text-muted-foreground text-center -mt-2">
+            Te desactivamos y no recibirás más pedidos
+          </p>
         </div>
 
-        <p className="text-center text-xs text-gray-400">
+        <p className="text-center text-xs text-muted-foreground mt-8">
           Se abrirá tu WhatsApp con un mensaje automático
         </p>
-      </div>
+      </main>
       {ToastComponent}
     </div>
   )
@@ -99,8 +104,8 @@ function DriverStatusContent() {
 export default function DriverStatusPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
-        <p className="text-gray-500">Cargando...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Cargando...</p>
       </div>
     }>
       <DriverStatusContent />
