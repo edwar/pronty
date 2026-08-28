@@ -5,11 +5,13 @@ import { Suspense, useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Play, Square, MessageCircle } from "lucide-react"
+import { useToast } from "@/components/ui/toast"
 
 function DriverStatusContent() {
   const searchParams = useSearchParams()
   const name = searchParams.get("name") || "Domiciliario"
   const [whatsappPhone, setWhatsappPhone] = useState("")
+  const { showToast, ToastComponent } = useToast()
 
   useEffect(() => {
     fetch("/api/settings/public")
@@ -20,7 +22,7 @@ function DriverStatusContent() {
 
   const openWhatsApp = (text: string) => {
     if (!whatsappPhone) {
-      alert("El número de WhatsApp no está configurado. Contacta al administrador.")
+      showToast("El número de WhatsApp no está configurado. Contacta al administrador.")
       return
     }
     const url = `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=${encodeURIComponent(text)}`
@@ -83,6 +85,7 @@ function DriverStatusContent() {
           Se abrirá tu WhatsApp con un mensaje automático
         </p>
       </div>
+      {ToastComponent}
     </div>
   )
 }
