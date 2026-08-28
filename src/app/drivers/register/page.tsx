@@ -40,7 +40,7 @@ export default function DriverRegisterPage() {
     "Funza", "Madrid", "Fontibón", "Kennedy",
     "Fusagasugá", "Arbeláez", "San Bernardo", "Silvania", "Granada",
     "Chocontá", "Machetá", "Manta", "Sesquilé", "Guasca",
-    "Gachalá", "Ubalá", "Gachetá", "Gachancipá",
+    "Gachalá", "Ubalá", "Gachetá",
     "Ubaté", "Fúquene", "Tausa", "Sutatausa", "Carmen de Carupa",
     "Anapoima", "Apaneca", "Apulo", "La Mesa", "Tena",
     "Viotá", "Cachipay", "Tocaima", "Agua de Dios",
