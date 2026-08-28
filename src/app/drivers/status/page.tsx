@@ -19,7 +19,10 @@ function DriverStatusContent() {
   }, [])
 
   const openWhatsApp = (text: string) => {
-    if (!whatsappPhone) return
+    if (!whatsappPhone) {
+      alert("El número de WhatsApp no está configurado. Contacta al administrador.")
+      return
+    }
     const url = `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=${encodeURIComponent(text)}`
     window.open(url, "_blank")
   }
@@ -50,7 +53,6 @@ function DriverStatusContent() {
               <Button
                 className="w-full h-16 text-base font-semibold bg-green-500 hover:bg-green-600 text-white"
                 onClick={() => openWhatsApp("Empece")}
-                disabled={!whatsappPhone}
               >
                 <Play className="h-5 w-5 mr-2" />
                 Empezar a trabajar
@@ -66,7 +68,6 @@ function DriverStatusContent() {
               <Button
                 className="w-full h-16 text-base font-semibold bg-red-500 hover:bg-red-600 text-white"
                 onClick={() => openWhatsApp("Pare")}
-                disabled={!whatsappPhone}
               >
                 <Square className="h-5 w-5 mr-2" />
                 Dejar de trabajar
