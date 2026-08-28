@@ -35,6 +35,14 @@ export async function handleDriverMessage(phone: string, message: string) {
 
   // Primera activación: needs_activation → active
   if (driver.conversationStage === "needs_activation") {
+    if (!driver.isApproved) {
+      await sendWhatsAppMessage({
+        to: phone,
+        message: `Hola ${driver.fullName}, tu cuenta está pendiente de aprobación por el administrador. Recibirás un mensaje cuando sea aprobada.`,
+      })
+      return
+    }
+
     await prisma.driver.update({
       where: { id: driver.id },
       data: {
@@ -54,6 +62,14 @@ export async function handleDriverMessage(phone: string, message: string) {
 
   // Activar: "empece" / "activo" / "trabajar"
   if (normalizedMessage === "empece" || normalizedMessage === "activo" || normalizedMessage === "trabajar") {
+    if (!driver.isApproved) {
+      await sendWhatsAppMessage({
+        to: phone,
+        message: `Hola ${driver.fullName}, tu cuenta está pendiente de aprobación por el administrador.`,
+      })
+      return
+    }
+
     await prisma.driver.update({
       where: { id: driver.id },
       data: {
