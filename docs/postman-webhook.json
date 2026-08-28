@@ -1,0 +1,67 @@
+{
+  "info": {
+    "name": "Pronty WhatsApp Webhook",
+    "description": "Test webhook for WhatsApp messages",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Send Text Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"1134799259204734\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"15556726313\",\n              \"phone_number_id\": \"1317606174766417\"\n            },\n            \"contacts\": [\n              {\n                \"profile\": {\n                  \"name\": \"Edwar Amaya\",\n                  \"username\": \"edwaramaya\"\n                },\n                \"wa_id\": \"573175227672\",\n                \"user_id\": \"CO.2906168183075817\",\n                \"country_code\": \"CO\"\n              }\n            ],\n            \"messages\": [\n              {\n                \"from\": \"573175227672\",\n                \"from_user_id\": \"CO.2906168183075817\",\n                \"id\": \"wamid.test\",\n                \"timestamp\": \"1787897195\",\n                \"text\": {\n                  \"body\": \"Empece\"\n                },\n                \"type\": \"text\"\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/webhooks/whatsapp",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "webhooks", "whatsapp"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send Button Response",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"1134799259204734\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"15556726313\",\n              \"phone_number_id\": \"1317606174766417\"\n            },\n            \"contacts\": [\n              {\n                \"profile\": {\n                  \"name\": \"Edwar Amaya\",\n                  \"username\": \"edwaramaya\"\n                },\n                \"wa_id\": \"573175227672\",\n                \"user_id\": \"CO.2906168183075817\",\n                \"country_code\": \"CO\"\n              }\n            ],\n            \"messages\": [\n              {\n                \"from\": \"573175227672\",\n                \"from_user_id\": \"CO.2906168183075817\",\n                \"id\": \"wamid.test\",\n                \"timestamp\": \"1787897195\",\n                \"type\": \"interactive\",\n                \"interactive\": {\n                  \"type\": \"button_reply\",\n                  \"button_reply\": {\n                    \"id\": \"accept_ORDER_ID_HERE\",\n                    \"title\": \"Aceptar Pedido\"\n                  }\n                }\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/webhooks/whatsapp",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "webhooks", "whatsapp"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
