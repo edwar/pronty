@@ -62,6 +62,184 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Create Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Cookie",
+            "value": "better-auth.session_token=YOUR_SESSION_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientName\": \"María García\",\n  \"recipientPhone\": \"+573175227672\",\n  \"pickupAddress\": \"Cra 43A #1-50, El Poblado, Medellín\",\n  \"pickupLat\": 6.2089,\n  \"pickupLng\": -75.5726,\n  \"pickupNotes\": \"Frente al Parque Lleras\",\n  \"deliveryAddress\": \"Cra 7 #72-41, Chapinero, Bogotá\",\n  \"deliveryLat\": 4.6689,\n  \"deliveryLng\": -74.0536,\n  \"deliveryNotes\": \"Torre 3, Apto 1201\",\n  \"packageDescription\": \"2 Hamburguesas + Bebidas\",\n  \"totalFee\": 15000,\n  \"distanceKm\": 418.5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/orders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "orders"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Accept Order (Button Response)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"1134799259204734\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"15556726313\",\n              \"phone_number_id\": \"1317606174766417\"\n            },\n            \"contacts\": [\n              {\n                \"profile\": {\n                  \"name\": \"Edwar Amaya\",\n                  \"username\": \"edwaramaya\"\n                },\n                \"wa_id\": \"573175227672\",\n                \"user_id\": \"CO.2906168183075817\",\n                \"country_code\": \"CO\"\n              }\n            ],\n            \"messages\": [\n              {\n                \"from\": \"573175227672\",\n                \"from_user_id\": \"CO.2906168183075817\",\n                \"id\": \"wamid.test\",\n                \"timestamp\": \"1787897195\",\n                \"type\": \"interactive\",\n                \"interactive\": {\n                  \"type\": \"button_reply\",\n                  \"button_reply\": {\n                    \"id\": \"accept_ORDER_ID_HERE\",\n                    \"title\": \"Aceptar Pedido\"\n                  }\n                }\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/webhooks/whatsapp",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "webhooks", "whatsapp"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Decline Order (Button Response)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"1134799259204734\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"15556726313\",\n              \"phone_number_id\": \"1317606174766417\"\n            },\n            \"contacts\": [\n              {\n                \"profile\": {\n                  \"name\": \"Edwar Amaya\",\n                  \"username\": \"edwaramaya\"\n                },\n                \"wa_id\": \"573175227672\",\n                \"user_id\": \"CO.2906168183075817\",\n                \"country_code\": \"CO\"\n              }\n            ],\n            \"messages\": [\n              {\n                \"from\": \"573175227672\",\n                \"from_user_id\": \"CO.2906168183075817\",\n                \"id\": \"wamid.test\",\n                \"timestamp\": \"1787897195\",\n                \"type\": \"interactive\",\n                \"interactive\": {\n                  \"type\": \"button_reply\",\n                  \"button_reply\": {\n                    \"id\": \"decline_ORDER_ID_HERE\",\n                    \"title\": \"Rechazar Pedido\"\n                  }\n                }\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/webhooks/whatsapp",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "webhooks", "whatsapp"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Confirm Pickup (Button Response)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"1134799259204734\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"15556726313\",\n              \"phone_number_id\": \"1317606174766417\"\n            },\n            \"contacts\": [\n              {\n                \"profile\": {\n                  \"name\": \"Edwar Amaya\",\n                  \"username\": \"edwaramaya\"\n                },\n                \"wa_id\": \"573175227672\",\n                \"user_id\": \"CO.2906168183075817\",\n                \"country_code\": \"CO\"\n              }\n            ],\n            \"messages\": [\n              {\n                \"from\": \"573175227672\",\n                \"from_user_id\": \"CO.2906168183075817\",\n                \"id\": \"wamid.test\",\n                \"timestamp\": \"1787897195\",\n                \"type\": \"interactive\",\n                \"interactive\": {\n                  \"type\": \"button_reply\",\n                  \"button_reply\": {\n                    \"id\": \"pickup_ORDER_ID_HERE\",\n                    \"title\": \"Recogido\"\n                  }\n                }\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/webhooks/whatsapp",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "webhooks", "whatsapp"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Confirm Delivery (Button Response)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"1134799259204734\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"15556726313\",\n              \"phone_number_id\": \"1317606174766417\"\n            },\n            \"contacts\": [\n              {\n                \"profile\": {\n                  \"name\": \"Edwar Amaya\",\n                  \"username\": \"edwaramaya\"\n                },\n                \"wa_id\": \"573175227672\",\n                \"user_id\": \"CO.2906168183075817\",\n                \"country_code\": \"CO\"\n              }\n            ],\n            \"messages\": [\n              {\n                \"from\": \"573175227672\",\n                \"from_user_id\": \"CO.2906168183075817\",\n                \"id\": \"wamid.test\",\n                \"timestamp\": \"1787897195\",\n                \"type\": \"interactive\",\n                \"interactive\": {\n                  \"type\": \"button_reply\",\n                  \"button_reply\": {\n                    \"id\": \"delivered_ORDER_ID_HERE\",\n                    \"title\": \"Entregado\"\n                  }\n                }\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/webhooks/whatsapp",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "webhooks", "whatsapp"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Report Failed Delivery (Button Response)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"1134799259204734\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"15556726313\",\n              \"phone_number_id\": \"1317606174766417\"\n            },\n            \"contacts\": [\n              {\n                \"profile\": {\n                  \"name\": \"Edwar Amaya\",\n                  \"username\": \"edwaramaya\"\n                },\n                \"wa_id\": \"573175227672\",\n                \"user_id\": \"CO.2906168183075817\",\n                \"country_code\": \"CO\"\n              }\n            ],\n            \"messages\": [\n              {\n                \"from\": \"573175227672\",\n                \"from_user_id\": \"CO.2906168183075817\",\n                \"id\": \"wamid.test\",\n                \"timestamp\": \"1787897195\",\n                \"type\": \"interactive\",\n                \"interactive\": {\n                  \"type\": \"button_reply\",\n                  \"button_reply\": {\n                    \"id\": \"failed_ORDER_ID_HERE\",\n                    \"title\": \"No Entregado\"\n                  }\n                }\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/webhooks/whatsapp",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "webhooks", "whatsapp"]
+        }
+      },
+      "response": []
     }
   ]
 }

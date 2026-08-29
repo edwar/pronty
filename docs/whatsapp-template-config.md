@@ -151,26 +151,39 @@ EMAIL_FROM=Pronty <notificaciones@tudominio.com>
 
 ---
 
-## Flujo completo (2 mensajes + email)
+## Flujo completo optimizado (2 mensajes + 1 email)
 
 ```
-Mensaje 1 (UTILITY TEMPLATE)
-├── Contenido: Datos básicos del pedido
+Mensaje 1 (UTILITY TEMPLATE) — 1 mensaje
+├── Contenido: Datos del pedido + botones Aceptar/Rechazar
 ├── Botones: [Aceptar Pedido] / [Rechazar]
-└── Costo: Tarifa Utility
+├── Costo: Tarifa Utility (~$0.03-0.05 USD)
+└── Si rechaza → Muere aquí (1 solo mensaje gastado)
 
 Mensaje 2 (SERVICE) — solo si acepta
-├── Contenido: Detalles completos de recogida/entrega
-├── Botón: [Confirmar Recogida]
-└── Costo: Tarifa Service (más económica)
+├── Contenido: Detalles de recogida/entrega + 3 botones de acción
+├── Botones: [Confirmar Recogida] / [Entregado] / [No se pudo entregar]
+├── Costo: Tarifa Service (~$0.005-0.01 USD)
+└── Secuencia lógica: Recoger → Entregar/Fallar
 
-Mensaje 2b (SERVICE) — después de recoger
-├── Contenido: ¿Se completó la entrega?
-├── Botones: [Sí, entregado] / [No se pudo entregar]
-└── Costo: Tarifa Service
-
-Email (cierre)
+Email (cierre) — sin costo WhatsApp
 ├── Asunto: ¡Pedido #{ID} entregado! Resumen de ganancia
-├── Contenido: Desglose de ganancias
+├── Contenido: Desglose de ganancias (base - comisión = ganancia neta)
 └── Costo: Gratis (Resend)
 ```
+
+### Ahorro vs flujo anterior
+
+| Concepto | Antes | Ahora | Ahorro |
+|----------|-------|-------|--------|
+| Mensajes por pedido completado | 3 WhatsApp | 2 WhatsApp | **33%** |
+| Costo estimado/pedido | ~$0.04-0.07 | ~$0.035-0.06 | **~25%** |
+| Si rechaza primer domiciliario | 1 mensaje | 1 mensaje | Igual |
+
+### Lógica de botones (Mensaje 2)
+
+El domiciliario debe seguir la secuencia lógica:
+1. **"Confirmar Recogida"** → Cambia estado a IN_TRANSIT
+2. **"Entregado"** o **"No se pudo entregar"** → Cierra el pedido
+
+Si intenta presionar "Entregado" sin haber recogido, el sistema validará el estado actual.

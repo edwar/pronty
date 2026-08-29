@@ -161,7 +161,7 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
       },
     })
 
-    // Enviar ubicación de recogida con botón para confirmar
+    // Enviar ubicación de recogida con botones de acción
     const pickupMapLink = order.pickupLat && order.pickupLng
       ? `\n🗺️ *Ubicación:* https://www.google.com/maps?q=${order.pickupLat},${order.pickupLng}`
       : ""
@@ -174,6 +174,8 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
       `✅ Pedido #${order.orderNumber} aceptado\n\n📍 *Recogida:* ${order.pickupAddress}${pickupMapLink}\n${order.pickupNotes ? `📝 Nota: ${order.pickupNotes}\n` : ""}\n🏠 *Entrega:* ${order.deliveryAddress}${deliveryMapLink}\n💰 *Tarifa:* $${Number(order.totalFee).toLocaleString("es-CO")}${order.distanceKm ? `\n📏 *Distancia:* ${Number(order.distanceKm).toFixed(1)} km` : ""}`,
       [
         { id: `pickup_${orderId}`, title: "Confirmar Recogida" },
+        { id: `delivered_${orderId}`, title: "Entregado" },
+        { id: `failed_${orderId}`, title: "No se pudo entregar" },
       ]
     )
 
@@ -232,7 +234,7 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
       return
     }
 
-    // Actualizar estado a IN_TRANSIT
+    // Actualizar estado a IN_TRANSIT (sin enviar mensaje WhatsApp)
     await prisma.order.update({
       where: { id: orderId },
       data: {
@@ -249,16 +251,6 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
       },
     })
 
-    // Preguntar si entregó
-    await sendWhatsAppButtonMessage(
-      phone,
-      `📦 Pedido #${order.orderNumber} recogido\n\n¿Se completó la entrega?`,
-      [
-        { id: `delivered_${orderId}`, title: "Sí, entregado" },
-        { id: `failed_${orderId}`, title: "No se pudo entregar" },
-      ]
-    )
-
     console.log(`[WhatsApp] Order ${order.orderNumber} pickup confirmed by ${driver.fullName}`)
     return
   }
@@ -274,6 +266,36 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
 
     if (!order) {
       console.log(`[WhatsApp] Order not found: ${orderId}`)
+      return
+    }
+
+    // Si no ha recogido, solo enviar correo informativo (gratis)
+    if (order.status !== "IN_TRANSIT") {
+      const driverUser = await prisma.user.findUnique({
+        where: { id: driver.userId },
+      })
+
+      if (driverUser?.email) {
+        await sendEmail({
+          to: driverUser.email,
+          subject: `Instrucciones para pedido #${order.orderNumber}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #333;">Hola ${driver.fullName}</h2>
+              <p>Intentaste marcar el pedido <strong>#${order.orderNumber}</strong> como entregado, pero primero debes confirmar la recogida.</p>
+              <p><strong>Paso a seguir:</strong></p>
+              <ol>
+                <li>Presiona el botón <strong>"Confirmar Recogida"</strong> en el mensaje de WhatsApp del pedido.</li>
+                <li>Una vez recogido, podrás marcar como <strong>"Entregado"</strong> o <strong>"No se pudo entregar"</strong>.</li>
+              </ol>
+              <p style="color: #666; margin-top: 20px;">Si tienes dudas, contacta al soporte.</p>
+              <p style="color: #999; font-size: 12px;">Equipo Pronty</p>
+            </div>
+          `,
+        })
+      }
+
+      console.log(`[WhatsApp] Delivery attempt ignored for ${order.orderNumber} - not yet picked up`)
       return
     }
 
@@ -354,6 +376,36 @@ export async function handleDriverButtonResponse(phone: string, buttonId: string
 
     if (!order) {
       console.log(`[WhatsApp] Order not found: ${orderId}`)
+      return
+    }
+
+    // Si no ha recogido, solo enviar correo informativo (gratis)
+    if (order.status !== "IN_TRANSIT") {
+      const driverUser = await prisma.user.findUnique({
+        where: { id: driver.userId },
+      })
+
+      if (driverUser?.email) {
+        await sendEmail({
+          to: driverUser.email,
+          subject: `Instrucciones para pedido #${order.orderNumber}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #333;">Hola ${driver.fullName}</h2>
+              <p>Intentaste reportar una falla en el pedido <strong>#${order.orderNumber}</strong>, pero primero debes confirmar la recogida.</p>
+              <p><strong>Paso a seguir:</strong></p>
+              <ol>
+                <li>Presiona el botón <strong>"Confirmar Recogida"</strong> en el mensaje de WhatsApp del pedido.</li>
+                <li>Una vez recogido, podrás marcar como <strong>"Entregado"</strong> o <strong>"No se pudo entregar"</strong>.</li>
+              </ol>
+              <p style="color: #666; margin-top: 20px;">Si tienes dudas, contacta al soporte.</p>
+              <p style="color: #999; font-size: 12px;">Equipo Pronty</p>
+            </div>
+          `,
+        })
+      }
+
+      console.log(`[WhatsApp] Failed delivery attempt ignored for ${order.orderNumber} - not yet picked up`)
       return
     }
 
